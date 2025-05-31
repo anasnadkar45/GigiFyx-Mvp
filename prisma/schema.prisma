@@ -14,19 +14,19 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String        @unique
   emailVerified DateTime?
   image         String?
-  role          Role      @default(UNASSIGNED)
-  clinic        Clinic?   @relation("UserClinic")
-  bookings      Booking[]
+  role          Role          @default(UNASSIGNED)
+  clinic        Clinic?       @relation("UserClinic")
   accounts      Account[]
   sessions      Session[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   Patient       Patient?
+  Appointment   Appointment[]
 }
 
 enum Role {
@@ -76,16 +76,28 @@ model Clinic {
   ownerId String @unique
   owner   User   @relation("UserClinic", fields: [ownerId], references: [id])
 
-  doctors   Doctor[]
-  slots     Slot[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  doctors      Doctor[]
+  slots        Slot[]
+  services     Service[]
+  workingHours ClinicWorkingHours[] // NEW RELATION
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 }
 
 enum ClinicStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
 
 model Doctor {
@@ -99,25 +111,52 @@ model Doctor {
   updatedAt      DateTime @updatedAt
 }
 
-model Slot {
-  id        String   @id @default(cuid())
-  clinicId  String
-  clinic    Clinic   @relation(fields: [clinicId], references: [id])
-  startTime DateTime
-  endTime   DateTime
-  isBooked  Boolean  @default(false)
-  booking   Booking?
+model ClinicWorkingHours {
+  id       String @id @default(cuid())
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  day       DayOfWeek
+  openTime  DateTime
+  closeTime DateTime
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clinicId, day]) // ensures one entry per day per clinic
 }
 
-model Booking {
-  id        String        @id @default(cuid())
-  userId    String
-  slotId    String        @unique
-  user      User          @relation(fields: [userId], references: [id])
-  slot      Slot          @relation(fields: [slotId], references: [id])
-  status    BookingStatus @default(BOOKED)
-  createdAt DateTime      @default(now())
+model Slot {
+  id        String     @id @default(cuid())
+  clinicId  String
+  clinic    Clinic     @relation(fields: [clinicId], references: [id])
+  startTime DateTime
+  endTime   DateTime
+  status    SlotStatus @default(AVAILABLE)
+
+  createdAt   DateTime     @default(now())
+  Appointment Appointment?
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+  BLOCKED
+}
+
+model Appointment {
+  id                 String        @id @default(cuid())
+  userId             String
+  slotId             String        @unique
+  serviceId          String
+  user               User          @relation(fields: [userId], references: [id])
+  slot               Slot          @relation(fields: [slotId], references: [id])
+  status             BookingStatus @default(BOOKED)
+  service            Service       @relation(fields: [serviceId], references: [id])
+  startTime          DateTime // Start time of appointment
+  endTime            DateTime // End time of appointment
+  patientDescription String?
+  createdAt          DateTime      @default(now())
 }
 
 enum BookingStatus {
@@ -126,6 +165,24 @@ enum BookingStatus {
   COMPLETED
 }
 
+model Service {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  price       Float?
+  category    String
+  isActive    ServiceStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Clinic      Clinic?       @relation(fields: [clinicId], references: [id])
+  clinicId    String?
+  Appointment Appointment[]
+}
+
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+}
 model Account {
   userId            String
   type              String

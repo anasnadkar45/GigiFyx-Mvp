@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/landing-page/Header";
 import { Toaster } from "@/components/ui/sonner";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { MainNav } from "@/components/main-nav";
+import NextTopLoader from 'nextjs-toploader';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,18 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NextTopLoader />
         <Toaster />
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 m-0">
-              <MainNav />
-              <main className="flex-1">{children}</main>
-              {/* <Footer /> */}
-            </div>
-          </SidebarInset>
-          <Toaster />
-        </SidebarProvider>
+        <main className="">{children}</main>
       </body>
     </html>
   );
