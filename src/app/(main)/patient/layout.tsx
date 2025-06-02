@@ -1,31 +1,37 @@
-import { Sidebar } from "@/app/components/patient/Sidebar";
-import { getUserData } from "@/app/utils/hooks";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { redirect } from "next/navigation";
-import React from "react";
+import type React from "react"
+import { auth } from "@/app/utils/auth"
+import { getUserData } from "@/app/utils/hooks"
+import { redirect } from "next/navigation"
+import { PatientSidebar } from "@/components/navigation/patient-sidebar"
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
 
-const MainLayout = async ({
-    children,
+export default async function PatientLayout({
+  children,
 }: {
-    children: React.ReactNode;
-}) => {
-    const user = await getUserData()
-    if (user.user?.role === "CLINIC_OWNER") {
-        redirect("/clinic/dashboard")
-    }
-    return (
-        <div className="w-screen h-screen flex custom-scrollbar scroll-smooth">
-            <div className="m-3 hidden md:flex flex-col">
-                <Sidebar />
-            </div>
-            <div className="w-full">
-                <ScrollArea className="h-[100vh] md:h-[100vh]  border-l-2">
-                    {children}
-                </ScrollArea>
-            </div>
-            {/* <BottomNav /> */}
-        </div>
-    );
-};
+  children: React.ReactNode
+}) {
+  const session = await auth()
+  const user = await getUserData()
 
-export default MainLayout;
+  if (!session?.user?.email) {
+    redirect("/login")
+  }
+
+  if (user.user?.role !== "PATIENT") {
+    redirect("/onboarding")
+  }
+
+  return (
+    <>
+      <PatientSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+        </header>
+        <div className="flex-1 overflow-auto">{children}</div>
+      </SidebarInset>
+    </>
+  )
+}

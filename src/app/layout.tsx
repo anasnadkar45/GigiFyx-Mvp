@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +31,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextTopLoader />
-        <Toaster />
-        <main className="">{children}</main>
+        {/* <Toaster /> */}
+        <SidebarProvider>
+          {children}
+          <Toaster position="top-right" />
+        </SidebarProvider>
       </body>
     </html>
   );

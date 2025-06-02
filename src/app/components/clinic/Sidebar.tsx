@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   Calendar, Crown, Globe, Home, Phone, Settings, Menu, X,
-  ChevronLeft, ChevronRight, Stethoscope, Users, Clock
+  ChevronLeft, ChevronRight, Stethoscope, Users, Clock,
+  Calendar1
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ const sidebarLinks = [
       { id: 0, name: "Dashboard", href: "/clinic/dashboard", icon: Home },
       { id: 1, name: "Appointments", href: "/clinic/appointments", icon: Calendar },
       { id: 2, name: "Patients", href: "/clinic/patients", icon: Users },
+      {id:3, name:"Calendar", href:"/clinic/calendar", icon:Calendar1}
     ],
   },
   {

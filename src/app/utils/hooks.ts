@@ -18,6 +18,11 @@ export async function getUserData() {
     where: {
       id: session?.user?.id
     },
+    include:{
+      clinic:true,
+      Appointments:true,
+      Patient:true,
+    }
   })
   return {
     userId: session?.user?.id,

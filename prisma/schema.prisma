@@ -26,7 +26,10 @@ model User {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   Patient       Patient?
-  Appointment   Appointment[]
+  Appointments  Appointment[]
+
+  @@index([email])
+  @@index([role])
 }
 
 enum Role {
@@ -39,7 +42,7 @@ enum Role {
 model Patient {
   id           String  @id @default(cuid())
   userId       String  @unique
-  user         User    @relation(fields: [userId], references: [id])
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   age          Int?
   name         String
   icOrPassport String  @unique
@@ -47,7 +50,7 @@ model Patient {
   email        String?
   address      String?
   notes        String?
-  status       String?
+  status       PatientStatus @default(ACTIVE)
   gender       Gender?
   bloodGroup   String?
   allergies    String? // comma-separated list or consider a separate model if needed
@@ -55,6 +58,16 @@ model Patient {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([icOrPassport])
+  @@index([phone])
+  @@index([status])
+}
+
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
 }
 
 enum Gender {
@@ -72,22 +85,39 @@ model Clinic {
   image       String?
   documentUrl String
   status      ClinicStatus @default(PENDING)
+  
+  // Contact and operational info
+  email       String?
+  website     String?
+  
+  // Location data for search/filtering
+  city        String?
+  state       String?
+  zipCode     String?
+  latitude    Float?
+  longitude   Float?
 
   ownerId String @unique
-  owner   User   @relation("UserClinic", fields: [ownerId], references: [id])
+  owner   User   @relation("UserClinic", fields: [ownerId], references: [id], onDelete: Cascade)
 
   doctors      Doctor[]
-  slots        Slot[]
   services     Service[]
-  workingHours ClinicWorkingHours[] // NEW RELATION
+  workingHours ClinicWorkingHours[]
+  appointments Appointment[]
+  
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
+
+  @@index([status])
+  @@index([city])
+  @@index([name])
 }
 
 enum ClinicStatus {
   PENDING
   APPROVED
   REJECTED
+  SUSPENDED
 }
 
 enum DayOfWeek {
@@ -105,10 +135,18 @@ model Doctor {
   name           String
   specialization String
   image          String?
+  bio            String?
+  experience     Int?     // years of experience
+  qualifications String?  // comma-separated or JSON
+  
   clinicId       String
-  clinic         Clinic   @relation(fields: [clinicId], references: [id])
+  clinic         Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([specialization])
 }
 
 model ClinicWorkingHours {
@@ -117,72 +155,169 @@ model ClinicWorkingHours {
   clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
   day       DayOfWeek
-  openTime  DateTime
-  closeTime DateTime
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  openTime  String    // Format: "HH:mm"
+  closeTime String    // Format: "HH:mm"
+  duration  Int       // Appointment duration in minutes
+  
+  // Break times (optional)
+  breakStartTime String? // Format: "HH:mm"
+  breakEndTime   String? // Format: "HH:mm"
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@unique([clinicId, day]) // ensures one entry per day per clinic
-}
-
-model Slot {
-  id        String     @id @default(cuid())
-  clinicId  String
-  clinic    Clinic     @relation(fields: [clinicId], references: [id])
-  startTime DateTime
-  endTime   DateTime
-  status    SlotStatus @default(AVAILABLE)
-
-  createdAt   DateTime     @default(now())
-  Appointment Appointment?
-}
-
-enum SlotStatus {
-  AVAILABLE
-  BOOKED
-  BLOCKED
+  @@index([clinicId])
 }
 
 model Appointment {
   id                 String        @id @default(cuid())
+  
+  // Patient and clinic info
   userId             String
-  slotId             String        @unique
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinicId           String
+  clinic             Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  
+  // Service info
   serviceId          String
-  user               User          @relation(fields: [userId], references: [id])
-  slot               Slot          @relation(fields: [slotId], references: [id])
+  service            Service       @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  
+  // Appointment timing
+  startTime          DateTime      // Start time of appointment
+  endTime            DateTime      // End time of appointment
+  
+  // Appointment details
   status             BookingStatus @default(BOOKED)
-  service            Service       @relation(fields: [serviceId], references: [id])
-  startTime          DateTime // Start time of appointment
-  endTime            DateTime // End time of appointment
-  patientDescription String?
+  patientDescription String?       // Patient's description of symptoms/concerns
+  clinicNotes        String?       // Clinic's internal notes
+  
+  // Cancellation info
+  cancellationReason String?
+  cancelledAt        DateTime?
+  cancelledBy        String?       // User ID who cancelled
+  
+  // Payment info (if applicable)
+  totalAmount        Float?
+  paymentStatus      PaymentStatus @default(PENDING)
+  paymentMethod      String?
+  
   createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([clinicId])
+  @@index([serviceId])
+  @@index([startTime])
+  @@index([status])
+  @@index([paymentStatus])
+  // Prevent overlapping appointments for the same clinic
+  @@unique([clinicId, startTime])
 }
 
 enum BookingStatus {
   BOOKED
-  CANCELLED
+  CONFIRMED
+  IN_PROGRESS
   COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }
 
 model Service {
-  id          String  @id @default(cuid())
-  name        String  @unique
+  id          String        @id @default(cuid())
+  name        String
   description String?
   price       Float?
   category    String
+  
+  // Service details
+  duration    Int?          // Default duration in minutes
+  preparation String?       // Preparation instructions for patients
+  
+  // Status and availability
   isActive    ServiceStatus @default(ACTIVE)
+  
+  // Clinic relationship (now required)
+  clinicId    String
+  clinic      Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  
+  appointments Appointment[]
+  
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  Clinic      Clinic?       @relation(fields: [clinicId], references: [id])
-  clinicId    String?
-  Appointment Appointment[]
+
+  @@index([clinicId])
+  @@index([category])
+  @@index([isActive])
+  @@unique([clinicId, name]) // Prevent duplicate service names within a clinic
 }
 
 enum ServiceStatus {
   ACTIVE
   INACTIVE
+  DISCONTINUED
 }
+
+// Notification system for appointment reminders
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  
+  // Related entities
+  appointmentId String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+}
+
+enum NotificationType {
+  APPOINTMENT_REMINDER
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_CANCELLED
+  APPOINTMENT_RESCHEDULED
+  CLINIC_UPDATE
+  SYSTEM_NOTIFICATION
+}
+
+// Clinic reviews and ratings
+model Review {
+  id        String @id @default(cuid())
+  userId    String
+  clinicId  String
+  
+  rating    Int    // 1-5 stars
+  comment   String?
+  
+  // Moderation
+  isApproved Boolean @default(false)
+  moderatedBy String?
+  moderatedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([rating])
+  @@index([isApproved])
+  @@unique([userId, clinicId]) // One review per user per clinic
+}
+
 model Account {
   userId            String
   type              String
