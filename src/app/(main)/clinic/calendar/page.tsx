@@ -1,6 +1,8 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getUserData } from "@/app/utils/hooks"
 import { WorkingHoursManager } from "@/components/clinic/calendar/working-hours-manager"
+import { Topbar, TopbarContent, TopbarDescription, TopbarTitle } from "@/components/global/Topbar"
+import { Wrapper } from "@/components/global/Wrapper"
 
 export default async function ClinicCalendarPage() {
   const user = await getUserData()
@@ -19,13 +21,17 @@ export default async function ClinicCalendarPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Calendar & Working Hours</h1>
-        <p className="text-muted-foreground">Manage your clinic's operating schedule and appointment availability</p>
-      </div>
+    <div>
+      <Topbar>
+        <TopbarContent>
+          <TopbarTitle>Calendar & Working Hours</TopbarTitle>
+          <TopbarDescription>Manage your clinic's operating schedule and appointment availability</TopbarDescription>
+        </TopbarContent>
+      </Topbar>
 
-      <WorkingHoursManager />
+      <Wrapper>
+        <WorkingHoursManager />
+      </Wrapper>
     </div>
   )
 }

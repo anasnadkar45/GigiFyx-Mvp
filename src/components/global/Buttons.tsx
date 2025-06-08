@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { Github, Loader2 } from "lucide-react";
 import { FaGoogle, FaLinkedin } from "react-icons/fa";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface iAppProps {
   text: string;
@@ -22,7 +23,7 @@ interface iAppProps {
   isSubmitting?: boolean;
 }
 
-export function SubmitButton({ text, variant, className, onClick,isSubmitting }: iAppProps) {
+export function SubmitButton({ text, variant, className, onClick, isSubmitting }: iAppProps) {
   const { pending } = useFormStatus();
   return (
     <>
@@ -39,6 +40,30 @@ export function SubmitButton({ text, variant, className, onClick,isSubmitting }:
   );
 }
 
+interface LoadingButtonProps extends React.ComponentProps<typeof Button> {
+  onClick: () => Promise<void> | void
+  children: React.ReactNode
+}
+
+export const LoadingButton = ({ onClick, children, ...props }: LoadingButtonProps) => {
+  const [loading, setLoading] = useState(false)
+
+  const handleClick = async () => {
+    setLoading(true)
+    try {
+      await onClick()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Button onClick={handleClick} disabled={loading || props.disabled} {...props}>
+      {loading && <Loader2 className="mr-2 size-4 animate-spin" />}
+      {loading ? "Please wait..." : children}
+    </Button>
+  )
+}
 
 export function GitHubAuthButton() {
   const { pending } = useFormStatus();

@@ -15,7 +15,7 @@ import {
 import { DollarSign, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Wrapper } from "@/components/global/Wrapper"
-import { Topbar } from "@/components/global/Topbar"
+import { Topbar, TopbarAction, TopbarContent, TopbarDescription, TopbarTitle } from "@/components/global/Topbar"
 import ServiceForm from "@/components/clinic/forms/ServiceForm"
 import type { Service } from "@/app/utils/types"
 import { Card, CardContent } from "@/components/ui/card"
@@ -114,13 +114,11 @@ export default function ClinicServicesPage() {
   if (loading) {
     return (
       <>
-        <Topbar className="justify-between">
-          <div>
-            <h1 className="font-bold">Services Management</h1>
-            <p className="text-muted-foreground text-sm font-medium">
-              Manage your clinic services, pricing, and availability
-            </p>
-          </div>
+        <Topbar>
+          <TopbarContent>
+            <TopbarTitle>Services Management</TopbarTitle>
+            <TopbarDescription>Manage your clinic services, pricing, and availability</TopbarDescription>
+          </TopbarContent>
         </Topbar>
         <Wrapper>
           <div className="flex items-center justify-center h-64">
@@ -134,36 +132,36 @@ export default function ClinicServicesPage() {
   return (
     <>
       {/* Header */}
-      <Topbar className="justify-between">
-        <div>
-          <h1 className="font-bold">Services Management</h1>
-          <p className="text-muted-foreground text-sm font-medium">
-            Manage your clinic services, pricing, and availability
-          </p>
-        </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Service
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Add New Service</DialogTitle>
-              <DialogDescription>Create a new service for your clinic</DialogDescription>
-            </DialogHeader>
-            <ServiceForm
-              service={formData}
-              onServiceChange={handleServiceChange}
-              onSave={handleAddService}
-              onCancel={() => setIsAddDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+      <Topbar>
+        <TopbarContent>
+          <TopbarTitle>Services Management</TopbarTitle>
+          <TopbarDescription>Manage your clinic services, pricing, and availability</TopbarDescription>
+        </TopbarContent>
+        <TopbarAction>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Service
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Add New Service</DialogTitle>
+                <DialogDescription>Create a new service for your clinic</DialogDescription>
+              </DialogHeader>
+              <ServiceForm
+                service={formData}
+                onServiceChange={handleServiceChange}
+                onSave={handleAddService}
+                onCancel={() => setIsAddDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </TopbarAction>
       </Topbar>
       <Wrapper>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -243,9 +241,8 @@ export default function ClinicServicesPage() {
                       <p className="text-sm mt-2">{service.description}</p>
                       <div className="mt-3">
                         <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs ${
-                            service.isActive === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                          }`}
+                          className={`inline-block px-2 py-1 rounded-full text-xs ${service.isActive === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                            }`}
                         >
                           {service.isActive}
                         </span>

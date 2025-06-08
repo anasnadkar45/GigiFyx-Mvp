@@ -18,8 +18,8 @@ export default async function LoginPage() {
                 redirect("/clinic/dashboard")
             } else if (user.user?.role === "ADMIN") {
                 redirect("/admin/dashboard")
-            } else {
-                redirect("/onboarding")
+            }else if (user.user?.role === "UNASSIGNED"){
+                redirect("/onbarding")
             }
         } catch (error) {
             console.error("Error fetching user data:", error)

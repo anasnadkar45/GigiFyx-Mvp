@@ -14,19 +14,28 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String?
-  email         String        @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role          @default(UNASSIGNED)
-  clinic        Clinic?       @relation("UserClinic")
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  Patient       Patient?
-  Appointments  Appointment[]
+  id             String          @id @default(cuid())
+  name           String?
+  email          String          @unique
+  emailVerified  DateTime?
+  image          String?
+  role           Role            @default(UNASSIGNED)
+  clinic         Clinic?         @relation("UserClinic")
+  accounts       Account[]
+  sessions       Session[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  Patient        Patient?
+  Appointments   Appointment[]
+  reviews        Review[] // Added relation to reviews
+  stockMovements StockMovement[] // Added relation to stock movements
+
+  // AI Features Relations
+  aiConversations            AiConversation[]
+  symptomChecks              SymptomCheck[]
+  appointmentRecommendations AppointmentRecommendation[]
+  createdTreatmentPlans      TreatmentPlan[]             @relation("TreatmentPlanCreator")
+  approvedTreatmentPlans     TreatmentPlan[]             @relation("TreatmentPlanApprover")
 
   @@index([email])
   @@index([role])
@@ -40,12 +49,12 @@ enum Role {
 }
 
 model Patient {
-  id           String  @id @default(cuid())
-  userId       String  @unique
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   age          Int?
   name         String
-  icOrPassport String  @unique
+  icOrPassport String        @unique
   phone        String
   email        String?
   address      String?
@@ -55,9 +64,13 @@ model Patient {
   bloodGroup   String?
   allergies    String? // comma-separated list or consider a separate model if needed
   medicalNote  String?
+  appointments Appointment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // AI Features Relations
+  treatmentPlans TreatmentPlan[]
 
   @@index([icOrPassport])
   @@index([phone])
@@ -83,30 +96,35 @@ model Clinic {
   phone       String
   description String
   image       String?
-  documentUrl String
+  documents   String[]
   status      ClinicStatus @default(PENDING)
-  
+
   // Contact and operational info
-  email       String?
-  website     String?
-  
+  email   String?
+  website String?
+
   // Location data for search/filtering
-  city        String?
-  state       String?
-  zipCode     String?
-  latitude    Float?
-  longitude   Float?
+  city      String?
+  state     String?
+  zipCode   String?
+  latitude  Float?
+  longitude Float?
 
   ownerId String @unique
   owner   User   @relation("UserClinic", fields: [ownerId], references: [id], onDelete: Cascade)
 
-  doctors      Doctor[]
-  services     Service[]
-  workingHours ClinicWorkingHours[]
-  appointments Appointment[]
-  
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  doctors        Doctor[]
+  services       Service[]
+  workingHours   ClinicWorkingHours[]
+  appointments   Appointment[]
+  reviews        Review[] // Added relation to reviews
+  inventoryItems InventoryItem[] // Added relation to inventory items
+
+  // AI Features Relations
+  treatmentPlans TreatmentPlan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([city])
@@ -131,19 +149,19 @@ enum DayOfWeek {
 }
 
 model Doctor {
-  id             String   @id @default(cuid())
+  id             String  @id @default(cuid())
   name           String
   specialization String
   image          String?
   bio            String?
-  experience     Int?     // years of experience
-  qualifications String?  // comma-separated or JSON
-  
-  clinicId       String
-  clinic         Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  experience     Int? // years of experience
+  qualifications String? // comma-separated or JSON
+
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([clinicId])
   @@index([specialization])
@@ -155,64 +173,66 @@ model ClinicWorkingHours {
   clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
   day       DayOfWeek
-  openTime  String    // Format: "HH:mm"
-  closeTime String    // Format: "HH:mm"
-  duration  Int       // Appointment duration in minutes
-  
+  openTime  String // Format: "HH:mm"
+  closeTime String // Format: "HH:mm"
+  duration  Int // Appointment duration in minutes
+
   // Break times (optional)
   breakStartTime String? // Format: "HH:mm"
   breakEndTime   String? // Format: "HH:mm"
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([clinicId, day]) // ensures one entry per day per clinic
   @@index([clinicId])
 }
 
 model Appointment {
-  id                 String        @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Patient and clinic info
-  userId             String
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clinicId           String
-  clinic             Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
   // Service info
-  serviceId          String
-  service            Service       @relation(fields: [serviceId], references: [id], onDelete: Restrict)
-  
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
   // Appointment timing
-  startTime          DateTime      // Start time of appointment
-  endTime            DateTime      // End time of appointment
-  
+  startTime DateTime // Start time of appointment
+  endTime   DateTime // End time of appointment
+
   // Appointment details
   status             BookingStatus @default(BOOKED)
-  patientDescription String?       // Patient's description of symptoms/concerns
-  clinicNotes        String?       // Clinic's internal notes
-  
+  patientDescription String? // Patient's description of symptoms/concerns
+  clinicNotes        String? // Clinic's internal notes
+
   // Cancellation info
   cancellationReason String?
   cancelledAt        DateTime?
-  cancelledBy        String?       // User ID who cancelled
-  
-  // Payment info (if applicable)
-  totalAmount        Float?
-  paymentStatus      PaymentStatus @default(PENDING)
-  paymentMethod      String?
-  
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  cancelledBy        String? // User ID who cancelled
 
+  // Payment info (if applicable)
+  totalAmount   Float?
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Patient   Patient? @relation(fields: [patientId], references: [id])
+  patientId String?
+
+  // Prevent overlapping appointments for the same clinic
+  @@unique([clinicId, startTime])
   @@index([userId])
   @@index([clinicId])
   @@index([serviceId])
   @@index([startTime])
   @@index([status])
   @@index([paymentStatus])
-  // Prevent overlapping appointments for the same clinic
-  @@unique([clinicId, startTime])
 }
 
 enum BookingStatus {
@@ -232,32 +252,32 @@ enum PaymentStatus {
 }
 
 model Service {
-  id          String        @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
   price       Float?
   category    String
-  
-  // Service details
-  duration    Int?          // Default duration in minutes
-  preparation String?       // Preparation instructions for patients
-  
-  // Status and availability
-  isActive    ServiceStatus @default(ACTIVE)
-  
-  // Clinic relationship (now required)
-  clinicId    String
-  clinic      Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  
-  appointments Appointment[]
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
 
+  // Service details
+  duration    Int? // Default duration in minutes
+  preparation String? // Preparation instructions for patients
+
+  // Status and availability
+  isActive ServiceStatus @default(ACTIVE)
+
+  // Clinic relationship (now required)
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clinicId, name]) // Prevent duplicate service names within a clinic
   @@index([clinicId])
   @@index([category])
   @@index([isActive])
-  @@unique([clinicId, name]) // Prevent duplicate service names within a clinic
 }
 
 enum ServiceStatus {
@@ -268,16 +288,16 @@ enum ServiceStatus {
 
 // Notification system for appointment reminders
 model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  isRead    Boolean          @default(false)
-  
+  id      String           @id @default(cuid())
+  userId  String
+  type    NotificationType
+  title   String
+  message String
+  isRead  Boolean          @default(false)
+
   // Related entities
   appointmentId String?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -293,29 +313,35 @@ enum NotificationType {
   APPOINTMENT_RESCHEDULED
   CLINIC_UPDATE
   SYSTEM_NOTIFICATION
+  APPOINTMENT_UPDATE
+  INVENTORY_ALERT
+  AI_RECOMMENDATION
+  SYMPTOM_ALERT
 }
 
 // Clinic reviews and ratings
 model Review {
-  id        String @id @default(cuid())
-  userId    String
-  clinicId  String
-  
-  rating    Int    // 1-5 stars
-  comment   String?
-  
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  rating  Int // 1-5 stars
+  comment String?
+
   // Moderation
-  isApproved Boolean @default(false)
+  isApproved  Boolean   @default(false)
   moderatedBy String?
   moderatedAt DateTime?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([userId, clinicId]) // One review per user per clinic
   @@index([clinicId])
   @@index([rating])
   @@index([isApproved])
-  @@unique([userId, clinicId]) // One review per user per clinic
 }
 
 model Account {
@@ -355,4 +381,254 @@ model VerificationToken {
   expires    DateTime
 
   @@id([identifier, token])
+}
+
+// Inventory Management Models
+
+model Supplier {
+  id            String   @id @default(cuid())
+  name          String
+  contactPerson String?
+  contactEmail  String?
+  contactPhone  String?
+  address       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  inventoryItems InventoryItem[]
+
+  @@index([name])
+}
+
+model InventoryItem {
+  id           String            @id @default(cuid())
+  name         String
+  description  String?
+  category     InventoryCategory
+  sku          String?
+  currentStock Int               @default(0)
+  minimumStock Int               @default(0)
+  maximumStock Int               @default(0)
+  unit         String
+  unitCost     Float?
+  unitPrice    Float?
+  expiryDate   DateTime?
+  clinicId     String
+  supplierId   String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  // Relations
+  clinic         Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  supplier       Supplier?       @relation(fields: [supplierId], references: [id])
+  stockMovements StockMovement[]
+
+  @@index([clinicId])
+  @@index([category])
+  @@index([currentStock])
+  @@index([supplierId])
+}
+
+model StockMovement {
+  id            String       @id @default(cuid())
+  movementType  MovementType
+  quantity      Int
+  reason        String?
+  previousStock Int?
+  newStock      Int?
+  itemId        String
+  userId        String
+  createdAt     DateTime     @default(now())
+
+  // Relations
+  item InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id])
+
+  @@index([itemId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Analytics models - these store aggregated data for faster queries
+
+model AnalyticsAppointment {
+  id             String   @id @default(cuid())
+  clinicId       String
+  date           DateTime
+  totalCount     Int
+  completedCount Int
+  cancelledCount Int
+  noShowCount    Int
+  totalRevenue   Float
+  createdAt      DateTime @default(now())
+
+  @@unique([clinicId, date])
+  @@index([clinicId])
+  @@index([date])
+}
+
+model AnalyticsService {
+  id           String   @id @default(cuid())
+  clinicId     String
+  serviceId    String
+  serviceName  String
+  month        String // Format: "YYYY-MM"
+  bookingCount Int
+  revenue      Float
+  createdAt    DateTime @default(now())
+
+  @@unique([clinicId, serviceId, month])
+  @@index([clinicId])
+  @@index([month])
+}
+
+model AnalyticsPatient {
+  id                String   @id @default(cuid())
+  clinicId          String
+  month             String // Format: "YYYY-MM"
+  newPatients       Int
+  returningPatients Int
+  totalPatients     Int
+  createdAt         DateTime @default(now())
+
+  @@unique([clinicId, month])
+  @@index([clinicId])
+  @@index([month])
+}
+
+// AI Features Models
+
+model AiConversation {
+  id        String    @id @default(cuid())
+  userId    String
+  message   String
+  response  String
+  context   AiContext
+  sessionId String
+  createdAt DateTime  @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("ai_conversations")
+}
+
+model SymptomCheck {
+  id             String        @id @default(cuid())
+  userId         String
+  symptoms       String
+  duration       String?
+  severity       SeverityLevel
+  additionalInfo String?
+  urgencyLevel   UrgencyLevel
+  aiAnalysis     String
+  createdAt      DateTime      @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([urgencyLevel])
+  @@index([createdAt])
+  @@map("symptom_checks")
+}
+
+model AppointmentRecommendation {
+  id                 String   @id @default(cuid())
+  userId             String
+  preferences        String // JSON string of user preferences
+  symptoms           String?
+  aiRecommendations  String // JSON string of AI analysis
+  recommendedClinics String // JSON string of recommended clinics
+  createdAt          DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("appointment_recommendations")
+}
+
+model TreatmentPlan {
+  id              String              @id @default(cuid())
+  patientId       String
+  clinicId        String
+  createdBy       String
+  diagnosis       String
+  symptoms        String
+  urgency         UrgencyLevel
+  aiGeneratedPlan String // JSON string of AI-generated treatment plan
+  status          TreatmentPlanStatus @default(DRAFT)
+  approvedBy      String?
+  approvedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  // Relations
+  patient  Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  clinic   Clinic  @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  creator  User    @relation("TreatmentPlanCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  approver User?   @relation("TreatmentPlanApprover", fields: [approvedBy], references: [id])
+
+  @@index([patientId])
+  @@index([clinicId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("treatment_plans")
+}
+
+// Enums for inventory management
+
+enum InventoryCategory {
+  MEDICATION
+  EQUIPMENT
+  SUPPLIES
+  MATERIALS
+  INSTRUMENTS
+  CONSUMABLES
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+// Enums for AI features
+
+enum AiContext {
+  GENERAL_INQUIRY
+  SYMPTOM_CHECK
+  APPOINTMENT_BOOKING
+  TREATMENT_QUESTION
+  EMERGENCY
+  FOLLOW_UP
+}
+
+enum SeverityLevel {
+  MILD
+  MODERATE
+  SEVERE
+  CRITICAL
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+}
+
+enum TreatmentPlanStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }

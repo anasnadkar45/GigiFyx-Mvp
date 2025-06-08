@@ -164,9 +164,9 @@ export default async function AdminDashboard() {
                     <Badge variant="outline" className="text-orange-600 border-orange-600">
                       Pending
                     </Badge>
-                    <Link href={`/admin/clinics/${clinic.id}`}>
+                    {/* <Link href={`/admin/clinics/${clinic.id}`}>
                       <Button size="sm">Review</Button>
-                    </Link>
+                    </Link> */}
                   </div>
                 </div>
               ))}

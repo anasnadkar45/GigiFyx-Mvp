@@ -5,6 +5,8 @@ import { Calendar, Clock, MapPin, Phone, Mail } from "lucide-react"
 import Link from "next/link"
 import { getUserData } from "@/app/utils/hooks"
 import { prisma } from "@/app/utils/db"
+import { Topbar, TopbarAction, TopbarContent, TopbarDescription, TopbarTitle } from "@/components/global/Topbar"
+import { Wrapper } from "@/components/global/Wrapper"
 
 export default async function PatientAppointmentsPage() {
   const user = await getUserData()
@@ -85,170 +87,174 @@ export default async function PatientAppointmentsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">My Appointments</h1>
-          <p className="text-muted-foreground">Manage your dental appointments</p>
-        </div>
-        <Link href="/patient/clinics">
-          <Button>Book New Appointment</Button>
-        </Link>
-      </div>
+    <>
+      <Topbar>
+        <TopbarContent>
+          <TopbarTitle>My Appointments</TopbarTitle>
+          <TopbarDescription>Manage your dental appointments</TopbarDescription>
+        </TopbarContent>
+        <TopbarAction>
+          <Link href="/patient/search">
+            <Button>Book New Appointment</Button>
+          </Link>
+        </TopbarAction>
+      </Topbar>
 
-      {/* Upcoming Appointments */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Upcoming Appointments ({upcomingAppointments.length})</CardTitle>
-          <CardDescription>Your scheduled appointments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {upcomingAppointments.length === 0 ? (
-            <div className="text-center py-8">
-              <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No upcoming appointments</p>
-              <Link href="/patient/clinics">
-                <Button className="mt-4">Book Your First Appointment</Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {upcomingAppointments.map((appointment) => (
-                <Card key={appointment.id} className="border">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Calendar className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg">{appointment.service.name}</h3>
-                          <p className="text-muted-foreground">{appointment.clinic.name}</p>
-                        </div>
-                      </div>
-                      {getStatusBadge(appointment.status)}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{new Date(appointment.startTime).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {new Date(appointment.startTime).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}{" "}
-                            -{" "}
-                            {new Date(appointment.endTime).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>{appointment.clinic.address}</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span>{appointment.clinic.phone}</span>
-                        </div>
-                        {appointment.clinic.email && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            <span>{appointment.clinic.email}</span>
+      <Wrapper className="space-y-6">
+        {/* Upcoming Appointments */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Appointments ({upcomingAppointments.length})</CardTitle>
+            <CardDescription>Your scheduled appointments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {upcomingAppointments.length === 0 ? (
+              <div className="text-center py-8">
+                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No upcoming appointments</p>
+                <Link href="/patient/clinics">
+                  <Button className="mt-4">Book Your First Appointment</Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {upcomingAppointments.map((appointment) => (
+                  <Card key={appointment.id} className="border">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <Calendar className="h-6 w-6 text-primary" />
                           </div>
-                        )}
-                        <div className="text-sm">
-                          <span className="font-medium">Price: </span>
-                          <span className="text-primary font-semibold">RM {appointment.service.price}</span>
+                          <div>
+                            <h3 className="font-semibold text-lg">{appointment.service.name}</h3>
+                            <p className="text-muted-foreground">{appointment.clinic.name}</p>
+                          </div>
+                        </div>
+                        {getStatusBadge(appointment.status)}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>{new Date(appointment.startTime).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              {new Date(appointment.startTime).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}{" "}
+                              -{" "}
+                              {new Date(appointment.endTime).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span>{appointment.clinic.address}</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span>{appointment.clinic.phone}</span>
+                          </div>
+                          {appointment.clinic.email && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Mail className="h-4 w-4 text-muted-foreground" />
+                              <span>{appointment.clinic.email}</span>
+                            </div>
+                          )}
+                          <div className="text-sm">
+                            <span className="font-medium">Price: </span>
+                            <span className="text-primary font-semibold">RM {appointment.service.price}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {appointment.patientDescription && (
-                      <div className="mb-4">
-                        <h4 className="font-medium mb-2">Your Notes:</h4>
-                        <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
-                          {appointment.patientDescription}
+                      {appointment.patientDescription && (
+                        <div className="mb-4">
+                          <h4 className="font-medium mb-2">Your Notes:</h4>
+                          <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
+                            {appointment.patientDescription}
+                          </p>
+                        </div>
+                      )}
+
+                      {appointment.service.preparation && (
+                        <div className="mb-4">
+                          <h4 className="font-medium mb-2">Preparation Instructions:</h4>
+                          <p className="text-sm text-muted-foreground bg-blue-50 p-3 rounded">
+                            {appointment.service.preparation}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          Reschedule
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-red-600 border-red-600 hover:bg-red-50">
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Past Appointments */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Past Appointments ({pastAppointments.length})</CardTitle>
+            <CardDescription>Your appointment history</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {pastAppointments.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No past appointments</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {pastAppointments.slice(0, 5).map((appointment) => (
+                  <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                        <Clock className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{appointment.service.name}</h3>
+                        <p className="text-sm text-muted-foreground">{appointment.clinic.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(appointment.startTime).toLocaleDateString()}
                         </p>
                       </div>
-                    )}
-
-                    {appointment.service.preparation && (
-                      <div className="mb-4">
-                        <h4 className="font-medium mb-2">Preparation Instructions:</h4>
-                        <p className="text-sm text-muted-foreground bg-blue-50 p-3 rounded">
-                          {appointment.service.preparation}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        Reschedule
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-red-600 border-red-600 hover:bg-red-50">
-                        Cancel
-                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Past Appointments */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Past Appointments ({pastAppointments.length})</CardTitle>
-          <CardDescription>Your appointment history</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {pastAppointments.length === 0 ? (
-            <div className="text-center py-8">
-              <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No past appointments</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {pastAppointments.slice(0, 5).map((appointment) => (
-                <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                      <Clock className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{appointment.service.name}</h3>
-                      <p className="text-sm text-muted-foreground">{appointment.clinic.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(appointment.startTime).toLocaleDateString()}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(appointment.status)}
+                      {appointment.status === "COMPLETED" && (
+                        <Button variant="outline" size="sm">
+                          Leave Review
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(appointment.status)}
-                    {appointment.status === "COMPLETED" && (
-                      <Button variant="outline" size="sm">
-                        Leave Review
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </Wrapper>
+    </>
   )
 }

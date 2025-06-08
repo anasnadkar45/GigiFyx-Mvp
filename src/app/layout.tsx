@@ -4,6 +4,9 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { extractRouterConfig } from "uploadthing/server";
+import { ourFileRouter } from "./api/uploadthing/core";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,11 +34,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextTopLoader />
-        {/* <Toaster /> */}
-        <SidebarProvider>
+        <NextSSRPlugin
+          routerConfig={extractRouterConfig(ourFileRouter)}
+        />
+        <main>
           {children}
           <Toaster position="top-right" />
-        </SidebarProvider>
+        </main>
       </body>
     </html>
   );

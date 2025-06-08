@@ -146,6 +146,7 @@ export async function POST(request: NextRequest) {
         userId: user.user.id,
         clinicId: validatedData.clinicId,
         serviceId: validatedData.serviceId,
+        patientId: patient.id,
         startTime: appointmentStart,
         endTime: appointmentEnd,
         patientDescription: validatedData.patientDescription,

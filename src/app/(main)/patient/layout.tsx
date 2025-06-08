@@ -2,9 +2,8 @@ import type React from "react"
 import { auth } from "@/app/utils/auth"
 import { getUserData } from "@/app/utils/hooks"
 import { redirect } from "next/navigation"
-import { PatientSidebar } from "@/components/navigation/patient-sidebar"
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
+import { Sidebar } from "@/components/navigation/Sidebar-Patient"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default async function PatientLayout({
   children,
@@ -24,14 +23,17 @@ export default async function PatientLayout({
 
   return (
     <>
-      <PatientSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-        </header>
-        <div className="flex-1 overflow-auto">{children}</div>
-      </SidebarInset>
+      <div className="w-screen h-screen flex custom-scrollbar scroll-smooth">
+        <div className="md:m-3 flex flex-col">
+          <Sidebar />
+        </div>
+        <div className="w-full">
+          <ScrollArea className="h-[100vh] md:h-[100vh]  border-l-2">
+            {children}
+          </ScrollArea>
+        </div>
+        {/* <BottomNav /> */}
+      </div>
     </>
   )
 }

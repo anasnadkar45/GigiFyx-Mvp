@@ -16,6 +16,8 @@ export default async function OnboardingPage() {
     redirect("/clinic/dashboard");
   }else if(user.user?.role === "PATIENT"){
     redirect("/patient/dashboard");
+  }else if(user.user?.role === "ADMIN"){
+    redirect("/admin/dashboard");
   }
 
   return (

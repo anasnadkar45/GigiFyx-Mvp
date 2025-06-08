@@ -1,14 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import {  useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { User, Building2, Shield } from "lucide-react"
+import { User, Building2, Shield, Loader2 } from "lucide-react"
+import { useFormStatus } from "react-dom"
+import { LoadingButton } from "../global/Buttons"
 const OnBoardingForm = () => {
     const router = useRouter()
     const [selectedRole, setSelectedRole] = useState<string | null>(null)
+    const { pending } = useFormStatus();
 
     const handleRoleSelect = (role: string) => {
         setSelectedRole(role)
@@ -53,11 +56,11 @@ const OnBoardingForm = () => {
         <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
             <div className="w-full max-w-4xl">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-white mb-4">Welcome to GigiFyx</h1>
-                    <p className="text-xl text-white/90">Choose your role to get started</p>
+                    <h1 className="text-4xl font-bold text-primary mb-4">Welcome to GigiFyx</h1>
+                    <p className="text-xl text-foreground">Choose your role to get started</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     {roles.map((role) => {
                         const Icon = role.icon
                         const isSelected = selectedRole === role.id
@@ -65,7 +68,7 @@ const OnBoardingForm = () => {
                         return (
                             <Card
                                 key={role.id}
-                                className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${isSelected ? "ring-2 ring-primary bg-primary/5 border-primary" : "hover:border-primary/50"
+                                className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${isSelected ? "ring-2 ring-primary bg-primary/30 border-primary" : "hover:border-primary/50"
                                     }`}
                                 onClick={() => handleRoleSelect(role.id)}
                             >
@@ -96,17 +99,17 @@ const OnBoardingForm = () => {
                 </div>
 
                 <div className="text-center">
-                    <Button
-                        size="lg"
+                    <LoadingButton
                         onClick={handleContinue}
+                        className="w-fit"
                         disabled={!selectedRole}
-                        className="bg-white text-primary hover:bg-white/90 px-8"
                     >
                         Continue
-                    </Button>
-                    <p className="text-white/70 text-sm mt-4">
+                    </LoadingButton>
+
+                    <p className=" text-sm mt-4">
                         Already have an account?{" "}
-                        <button onClick={() => router.push("/auth/signin")} className="text-white underline hover:no-underline">
+                        <button onClick={() => router.push("/auth/signin")} className="underline hover:no-underline">
                             Sign in here
                         </button>
                     </p>

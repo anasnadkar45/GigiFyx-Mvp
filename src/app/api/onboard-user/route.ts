@@ -28,7 +28,7 @@ const clinicSchema = z.object({
   clinicAddress: z.string().min(1, "Clinic address is required"),
   clinicPhone: z.string().min(1, "Clinic phone is required"),
   description: z.string().min(10, "Description is required"),
-  documentUrl: z.string().optional(),
+  documents: z.array(z.string(), { message: "Minimum 1 file is required" }),
 })
 
 export async function POST(request: NextRequest) {
@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
 
     // Onboard as clinic owner
     if (validatedData.role === "CLINIC_OWNER") {
+      const documents = Array.isArray(validatedData.documents) ? validatedData.documents : []
       await prisma.clinic.create({
         data: {
           ownerId: updatedUser.id,
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
           address: validatedData.clinicAddress,
           phone: validatedData.clinicPhone,
           description: validatedData.description,
-          documentUrl: validatedData.documentUrl || "",
+          documents: documents,
           status: "PENDING",
         },
       })

@@ -1,5 +1,6 @@
 import { auth } from "@/app/utils/auth"
 import { prisma } from "@/app/utils/db"
+import { revalidatePath } from "next/cache"
 import { NextResponse } from "next/server"
 
 export async function GET() {
@@ -22,21 +23,27 @@ export async function GET() {
       include: {
         owner: {
           select: {
+            id: true,
             name: true,
             email: true,
+            createdAt: true,
           },
         },
         _count: {
           select: {
             appointments: true,
             services: true,
+            reviews: true,
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [
+        { status: "asc" }, // PENDING first
+        { createdAt: "desc" },
+      ],
     })
+
+    revalidatePath('/admin/clinics')
 
     return NextResponse.json({ clinics })
   } catch (error) {

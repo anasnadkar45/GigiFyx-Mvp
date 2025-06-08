@@ -4,7 +4,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 
 const statusSchema = z.object({
-  status: z.enum(["APPROVED", "REJECTED"]),
+  status: z.enum(["APPROVED", "REJECTED", "SUSPENDED"]),
+  reason: z.string().optional(),
 })
 
 interface RouteParams {
@@ -59,12 +60,17 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     })
 
     // Create notification for clinic owner
+    const notificationMessage = validatedData.reason
+      ? `Your clinic "${clinic.name}" has been ${validatedData.status.toLowerCase()}. Reason: ${validatedData.reason}`
+      : `Your clinic "${clinic.name}" has been ${validatedData.status.toLowerCase()}.`
+
     await prisma.notification.create({
       data: {
         userId: clinic.ownerId,
         type: "CLINIC_UPDATE",
         title: `Clinic Application ${validatedData.status}`,
-        message: `Your clinic "${clinic.name}" has been ${validatedData.status.toLowerCase()}.`,
+        message: notificationMessage,
+        isRead: false,
       },
     })
 
