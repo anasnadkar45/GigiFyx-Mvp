@@ -1,16 +1,14 @@
 "use client"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Users, Shield, Star, Clock, ChevronRight, Search } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, MapPin, Shield, Clock, ChevronRight, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { signOut } from "next-auth/react"
 import { Toaster } from "sonner"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -40,8 +38,8 @@ type Clinic = {
 
 export function LandingPage({ user, featuredClinics = [] }: { user: any; featuredClinics: Clinic[] }) {
   const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedLocation, setSelectedLocation] = useState("")
+  const [searchLocation, setSearchLocation] = useState("")
+  const [searchService, setSearchService] = useState("")
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false)
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null)
 
@@ -68,289 +66,281 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
       return
     }
 
-    // If user is logged in and is a patient, show booking dialog
     setSelectedClinic(clinic)
     setIsBookingDialogOpen(true)
   }
 
   const handleProceedToBooking = () => {
     if (selectedClinic) {
-      router.push(`/patient/clinics/${selectedClinic.id}`)
+      router.push(`/patient/clinics/${selectedClinic.id}/book`)
     }
     setIsBookingDialogOpen(false)
   }
 
+  const handleSearch = () => {
+    const params = new URLSearchParams()
+    if (searchLocation) params.set("location", searchLocation)
+    if (searchService) params.set("service", searchService)
+    router.push(`/patient/clinics?${params.toString()}`)
+  }
+
+  // Get minimum price for each clinic
+  const getMinPrice = (services: any[]) => {
+    const prices = services.filter((s) => s.price).map((s) => s.price)
+    return prices.length > 0 ? Math.min(...prices) : null
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
-      {/* Sonner Toaster */}
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-purple-25 to-pink-50">
       <Toaster position="top-center" richColors />
 
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-sm sticky top-0 z-50 border-b border-purple-100">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">D</span>
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center relative">
+                <span className="text-white font-bold text-lg">🦷</span>
+                <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
+              </div>
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold">😊</span>
+              </div>
             </div>
-            <span className="text-xl font-bold text-primary">DentalCare</span>
+            <span className="text-2xl font-bold text-gray-800">GigiFyx</span>
           </div>
+
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/find-dentist" className="text-gray-700 hover:text-purple-600 font-medium">
+              Find a Dentist
+            </Link>
+            <Link href="/how-it-works" className="text-gray-700 hover:text-purple-600 font-medium">
+              How It Works
+            </Link>
+            <Link href="/for-clinics" className="text-gray-700 hover:text-purple-600 font-medium">
+              For Clinics
+            </Link>
+          </nav>
+
+          {/* Auth Buttons */}
           {!user?.id ? (
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <Link href="/login">
-                <Button variant="ghost">Sign In</Button>
+                <Button variant="ghost" className="text-gray-700 hover:text-purple-600">
+                  Sign In
+                </Button>
               </Link>
               <Link href="/signup">
-                <Button>Get Started</Button>
+                <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full">Sign Up</Button>
               </Link>
-            </div>
-          ) : user?.role === "CLINIC_OWNER" ? (
-            <div className="flex items-center space-x-4">
-              <Link href="/clinic/dashboard">
-                <Button variant="outline">Dashboard</Button>
-              </Link>
-              <form
-                action={() => {
-                  signOut()
-                }}
-              >
-                <Button type="submit" className="w-full" variant={"destructive"}>
-                  Logout
-                </Button>
-              </form>
-            </div>
-          ) : user?.role === "PATIENT" ? (
-            <div className="flex items-center space-x-4">
-              <Link href="/patient/dashboard">
-                <Button variant="outline">Dashboard</Button>
-              </Link>
-              <form
-                action={() => {
-                  signOut()
-                }}
-              >
-                <Button type="submit" className="w-full" variant={"destructive"}>
-                  Logout
-                </Button>
-              </form>
-            </div>
-          ) : user?.role === "ADMIN" ? (
-            <div className="flex items-center space-x-4">
-              <Link href="/admin/dashboard">
-                <Button variant="outline">Dashboard</Button>
-              </Link>
-              <form
-                action={() => {
-                  signOut()
-                }}
-              >
-                <Button type="submit" className="w-full" variant={"destructive"}>
-                  Logout
-                </Button>
-              </form>
             </div>
           ) : (
-            user?.role === "UNASSIGNED" && (
-              <div className="flex items-center space-x-4">
-                <Link href="/onboarding">
-                  <Button variant="outline">Complete Onboarding</Button>
+            <div className="flex items-center space-x-3">
+              {user.role === "PATIENT" && (
+                <Link href="/patient/dashboard">
+                  <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                    Dashboard
+                  </Button>
                 </Link>
-              </div>
-            )
+              )}
+              {user.role === "CLINIC_OWNER" && (
+                <Link href="/clinic/dashboard">
+                  <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
+              {user.role === "ADMIN" && (
+                <Link href="/admin/dashboard">
+                  <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
+              <Button onClick={() => signOut()} variant="ghost" className="text-gray-600 hover:text-red-600">
+                Logout
+              </Button>
+            </div>
           )}
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
-          <Badge className="mb-4" variant="secondary">
-            Trusted by 500+ Dental Clinics
-          </Badge>
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Your Smile, Our <span className="text-primary">Priority</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Connect with top-rated dental clinics, book appointments instantly, and manage your oral health with ease.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/patient/clinics">
-              <Button size="lg" className="w-full sm:w-auto">
-                <Calendar className="mr-2 h-5 w-5" />
-                Book Appointment
-              </Button>
-            </Link>
-            <Link href="/clinic/register">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                <Users className="mr-2 h-5 w-5" />
-                Join as Clinic
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Clinic Search Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="container mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Find Your Perfect Dental Clinic</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Browse our network of verified dental clinics and book your appointment today
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6 mb-12">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="col-span-1 md:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Search clinics by name or service..."
-                    className="pl-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
+      {/* Hero Section with Search */}
+      <section className="py-16 px-4">
+        <div className="mx-auto max-w-6xl">
+          {/* Search Form */}
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* Location Input */}
+              <div className="relative">
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  placeholder="KL Sentral"
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  className="pl-12 h-14 text-lg border-gray-200 focus:border-purple-300 focus:ring-purple-200"
+                />
               </div>
-              <div>
-                <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Locations" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="kuala-lumpur">Kuala Lumpur</SelectItem>
-                    <SelectItem value="penang">Penang</SelectItem>
-                    <SelectItem value="johor">Johor</SelectItem>
-                    <SelectItem value="selangor">Selangor</SelectItem>
-                  </SelectContent>
-                </Select>
+
+              {/* Service Input */}
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🦷</div>
+                <Input
+                  placeholder="Scaling"
+                  value={searchService}
+                  onChange={(e) => setSearchService(e.target.value)}
+                  className="pl-12 h-14 text-lg border-gray-200 focus:border-purple-300 focus:ring-purple-200"
+                />
               </div>
+            </div>
+
+            {/* Search Button */}
+            <div className="text-center">
+              <Button
+                onClick={handleSearch}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-12 py-4 text-lg rounded-full font-semibold"
+              >
+                Search
+              </Button>
             </div>
           </div>
 
           {/* Featured Clinics */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredClinics.map((clinic) => (
-              <Card key={clinic.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div className="h-48 bg-gray-200 relative">
-                  {clinic.image ? (
-                    <img
-                      src={clinic.image || "/placeholder.svg"}
-                      alt={clinic.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                      <span className="text-primary font-semibold">No Image Available</span>
-                    </div>
-                  )}
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center">
-                    <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                    <span className="font-medium">{clinic.avgRating}</span>
-                    <span className="text-xs text-gray-500 ml-1">({clinic.totalRatings})</span>
-                  </div>
-                </div>
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-start">
-                    <span>{clinic.name}</span>
-                  </CardTitle>
-                  <CardDescription className="flex items-start mt-2">
-                    <MapPin className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0 text-gray-400" />
-                    <span>{[clinic.address, clinic.city, clinic.state].filter(Boolean).join(", ")}</span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-600 line-clamp-2">{clinic.description}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredClinics.map((clinic) => {
+              const minPrice = getMinPrice(clinic.services)
+              const servicesList = clinic.services
+                .slice(0, 3)
+                .map((s) => s.name)
+                .join(", ")
 
-                    {clinic.services.length > 0 && (
-                      <div className="mt-4">
-                        <p className="text-sm font-medium mb-2">Popular Services:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {clinic.services.map((service) => (
-                            <Badge key={service.id} variant="outline" className="bg-primary/5">
-                              {service.name}
-                              {service.price && ` - RM${service.price}`}
-                            </Badge>
-                          ))}
+              return (
+                <Card
+                  key={clinic.id}
+                  className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border-0 overflow-hidden"
+                >
+                  {/* Profile Image */}
+                  <div className="flex justify-center pt-6 pb-4">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center overflow-hidden">
+                      {clinic.image ? (
+                        <img
+                          src={clinic.image || "/placeholder.svg"}
+                          alt={clinic.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-2xl">👨‍⚕️</span>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  {user?.id && (
-                    <Button variant="outline" size="sm" onClick={() => router.push(`/patient/clinics/${clinic.id}`)}>
-                      View Details
+
+                  <CardContent className="text-center px-6 pb-6">
+                    {/* Clinic Name */}
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">{clinic.name}</h3>
+
+                    {/* Services */}
+                    <p className="text-gray-600 text-sm mb-3">{servicesList || "General Dental Services"}</p>
+
+                    {/* Location */}
+                    <p className="text-gray-500 text-sm mb-4">{clinic.city || clinic.address}</p>
+
+                    {/* Price */}
+                    <div className="mb-4">
+                      <div className="text-2xl font-bold text-purple-600 mb-1">
+                        {minPrice ? `RM ${minPrice}` : "RM 150"}
+                      </div>
+                      <div className="text-gray-500 text-sm">Start at</div>
+                    </div>
+
+                    {/* Book Button */}
+                    <Button
+                      onClick={() => handleBookNow(clinic)}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-full py-2"
+                    >
+                      Book Now
                     </Button>
-                  )}
-                  <Button size="sm" onClick={() => handleBookNow(clinic)}>
-                    Book Now
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
 
+          {/* View All Button */}
           {featuredClinics.length > 0 && (
-            <div className="text-center mt-10">
+            <div className="text-center mt-12">
               <Link href="/patient/clinics">
-                <Button variant="outline" className="group">
+                <Button
+                  variant="outline"
+                  className="border-purple-200 text-purple-600 hover:bg-purple-50 px-8 py-3 rounded-full"
+                >
                   View All Clinics
-                  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             </div>
           )}
 
+          {/* Empty State */}
           {featuredClinics.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">No clinics available at the moment.</p>
-              <p className="text-sm text-gray-400">Please check back later or contact support.</p>
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-4xl">🦷</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">No clinics available</h3>
+              <p className="text-gray-600">Please check back later or contact support.</p>
             </div>
           )}
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 px-4 bg-gradient-to-br from-purple-50 to-pink-50">
+      <section className="py-16 px-4 bg-white">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose DentalCare?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose GigiFyx?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               We make dental care accessible, convenient, and reliable for everyone.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center">
+            <Card className="text-center border-0 shadow-md">
               <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="h-6 w-6 text-primary" />
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-8 w-8 text-purple-600" />
                 </div>
-                <CardTitle>Easy Booking</CardTitle>
-                <CardDescription>Book appointments in seconds with real-time availability</CardDescription>
+                <CardTitle className="text-xl">Easy Booking</CardTitle>
+                <CardDescription className="text-gray-600">
+                  Book appointments in seconds with real-time availability
+                </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="text-center">
+            <Card className="text-center border-0 shadow-md">
               <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="h-6 w-6 text-primary" />
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <MapPin className="h-8 w-8 text-purple-600" />
                 </div>
-                <CardTitle>Find Nearby Clinics</CardTitle>
-                <CardDescription>Discover verified dental clinics in your area</CardDescription>
+                <CardTitle className="text-xl">Find Nearby Clinics</CardTitle>
+                <CardDescription className="text-gray-600">
+                  Discover verified dental clinics in your area
+                </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="text-center">
+            <Card className="text-center border-0 shadow-md">
               <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Shield className="h-6 w-6 text-primary" />
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-purple-600" />
                 </div>
-                <CardTitle>Verified Providers</CardTitle>
-                <CardDescription>All clinics are verified and reviewed by our team</CardDescription>
+                <CardTitle className="text-xl">Verified Providers</CardTitle>
+                <CardDescription className="text-gray-600">
+                  All clinics are verified and reviewed by our team
+                </CardDescription>
               </CardHeader>
             </Card>
           </div>
@@ -358,24 +348,24 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 px-4 bg-primary text-white">
+      <section className="py-16 px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold mb-2">500+</div>
-              <div className="text-primary-foreground/80">Dental Clinics</div>
+              <div className="text-purple-100">Dental Clinics</div>
             </div>
             <div>
               <div className="text-4xl font-bold mb-2">10K+</div>
-              <div className="text-primary-foreground/80">Happy Patients</div>
+              <div className="text-purple-100">Happy Patients</div>
             </div>
             <div>
               <div className="text-4xl font-bold mb-2">50K+</div>
-              <div className="text-primary-foreground/80">Appointments</div>
+              <div className="text-purple-100">Appointments</div>
             </div>
             <div>
               <div className="text-4xl font-bold mb-2">4.9</div>
-              <div className="text-primary-foreground/80">Average Rating</div>
+              <div className="text-purple-100">Average Rating</div>
             </div>
           </div>
         </div>
@@ -387,10 +377,10 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">D</span>
+                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold">G</span>
                 </div>
-                <span className="text-xl font-bold">DentalCare</span>
+                <span className="text-xl font-bold">GigiFyx</span>
               </div>
               <p className="text-gray-400">Making dental care accessible and convenient for everyone.</p>
             </div>
@@ -438,7 +428,7 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 DentalCare Marketplace. All rights reserved.</p>
+            <p>&copy; 2024 GigiFyx. All rights reserved.</p>
           </div>
         </div>
       </footer>
@@ -454,15 +444,15 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
           {selectedClinic && (
             <div className="space-y-4 py-4">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
                   {selectedClinic.image ? (
                     <img
                       src={selectedClinic.image || "/placeholder.svg"}
                       alt={selectedClinic.name}
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full object-cover rounded-full"
                     />
                   ) : (
-                    <MapPin className="h-8 w-8 text-primary" />
+                    <span className="text-2xl">👨‍⚕️</span>
                   )}
                 </div>
                 <div>
@@ -473,9 +463,9 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-purple-50 p-4 rounded-lg">
                 <h4 className="font-medium mb-2 flex items-center">
-                  <Clock className="h-4 w-4 mr-2 text-primary" />
+                  <Clock className="h-4 w-4 mr-2 text-purple-600" />
                   Available Services
                 </h4>
                 <ul className="space-y-2">
@@ -490,9 +480,6 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
                     <li className="text-sm text-gray-500">No services listed</li>
                   )}
                 </ul>
-                {selectedClinic.services.length > 3 && (
-                  <p className="text-xs text-gray-500 mt-2">And more services available...</p>
-                )}
               </div>
             </div>
           )}
@@ -501,7 +488,9 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
             <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleProceedToBooking}>Proceed to Booking</Button>
+            <Button onClick={handleProceedToBooking} className="bg-purple-600 hover:bg-purple-700">
+              Proceed to Booking
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
