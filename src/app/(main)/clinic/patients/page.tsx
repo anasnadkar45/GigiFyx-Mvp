@@ -258,17 +258,6 @@ export default function ClinicPatientsPage() {
           <TopbarTitle>Patient Management</TopbarTitle>
           <TopbarDescription>Manage and monitor your clinic's patients</TopbarDescription>
         </TopbarContent>
-        <TopbarAction>
-          <div className="flex gap-2">
-            <Button size="sm" asChild>
-              <Link href="/clinic/appointments/new">
-                <Plus className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">New Appointment</span>
-                <span className="sm:hidden">New</span>
-              </Link>
-            </Button>
-          </div>
-        </TopbarAction>
       </Topbar>
 
       <Wrapper className="space-y-4 sm:space-y-6">
@@ -322,7 +311,7 @@ export default function ClinicPatientsPage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="space-y-4">
+        <Card className="space-y-4 p-6">
           {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -430,7 +419,7 @@ export default function ClinicPatientsPage() {
               </SelectContent>
             </Select>
           </div>
-        </div>
+        </Card>
 
         {/* Patients List */}
         <div className="space-y-3 sm:space-y-4">
@@ -793,11 +782,11 @@ function PatientDetailsView({ patient }: { patient: Patient }) {
                     </div>
                     <div className="flex items-center gap-2">
                       {getAppointmentStatusBadge(appointment.status)}
-                      <Button size="sm" variant="ghost" asChild>
+                      {/* <Button size="sm" variant="ghost" asChild>
                         <Link href={`/clinic/appointments/${appointment.id}`}>
                           <Eye className="h-3 w-3" />
                         </Link>
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
                 ))}

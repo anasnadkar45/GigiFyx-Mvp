@@ -300,7 +300,7 @@ export function ClinicList({ onSelectClinic }: ClinicListProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <Card className="space-y-4 px-6">
         <h1 className="text-3xl font-bold">Find Dental Clinics</h1>
 
         {/* Search Bar */}
@@ -469,7 +469,7 @@ export function ClinicList({ onSelectClinic }: ClinicListProps) {
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Clinic List */}
       {filteredClinics.length === 0 ? (

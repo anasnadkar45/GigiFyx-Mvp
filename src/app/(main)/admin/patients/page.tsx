@@ -18,6 +18,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Users, Search, Eye, Trash2, Calendar, Mail, Phone, MapPin, User, Activity, Star } from "lucide-react"
 import { toast } from "sonner"
+import { Wrapper } from "@/components/global/Wrapper"
+import { Topbar, TopbarContent, TopbarDescription, TopbarTitle } from "@/components/global/Topbar"
 
 interface Patient {
   id: string
@@ -129,176 +131,169 @@ export default function AdminPatientsPage() {
     return <Badge className={colors[gender as keyof typeof colors] || "bg-gray-100 text-gray-800"}>{gender}</Badge>
   }
 
-  // if (loading) {
-  //   return (
-  //     <div className="p-6">
-  //       <div className="flex items-center justify-center h-64">
-  //         <p>Loading patients...</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
 
   return (
-    <div className="p-6 space-y-6">
+    <>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Patient Management</h1>
-          <p className="text-muted-foreground">Manage and monitor patient accounts</p>
-        </div>
-      </div>
+      <Topbar>
+        <TopbarContent>
+          <TopbarTitle>Patient Management</TopbarTitle>
+          <TopbarDescription>Manage and monitor patient accounts</TopbarDescription>
+        </TopbarContent>
+      </Topbar>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search patients by name, email, or IC/Passport..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+      <Wrapper className="space-y-6">
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search patients by name, email, or IC/Passport..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
-            </div>
-            <Select value={genderFilter} onValueChange={setGenderFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Genders</SelectItem>
-                <SelectItem value="MALE">Male</SelectItem>
-                <SelectItem value="FEMALE">Female</SelectItem>
-                <SelectItem value="OTHER">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{patients.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Male Patients</CardTitle>
-            <User className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-500">{patients.filter((p) => p.gender === "MALE").length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Female Patients</CardTitle>
-            <User className="h-4 w-4 text-pink-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-pink-500">
-              {patients.filter((p) => p.gender === "FEMALE").length}
+              <Select value={genderFilter} onValueChange={setGenderFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Genders</SelectItem>
+                  <SelectItem value="MALE">Male</SelectItem>
+                  <SelectItem value="FEMALE">Female</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{patients.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Male Patients</CardTitle>
+              <User className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-500">{patients.filter((p) => p.gender === "MALE").length}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Female Patients</CardTitle>
+              <User className="h-4 w-4 text-pink-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-pink-500">
+                {patients.filter((p) => p.gender === "FEMALE").length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Patients</CardTitle>
+              <Activity className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-500">
+                {patients.filter((p) => p._count.appointments > 0).length}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Patients List */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Patients</CardTitle>
-            <Activity className="h-4 w-4 text-green-500" />
+          <CardHeader>
+            <CardTitle>Patients ({filteredPatients.length})</CardTitle>
+            <CardDescription>Manage patient accounts and view their information</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
-              {patients.filter((p) => p._count.appointments > 0).length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Patients List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Patients ({filteredPatients.length})</CardTitle>
-          <CardDescription>Manage patient accounts and view their information</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredPatients.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No patients found</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredPatients.map((patient) => (
-                <div key={patient.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <User className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{patient.name}</h3>
-                      <p className="text-sm text-muted-foreground">IC/Passport: {patient.icOrPassport}</p>
-                      <p className="text-sm text-muted-foreground">{patient.email}</p>
-                      <div className="flex items-center gap-4 mt-1">
-                        <p className="text-sm text-muted-foreground">Age: {patient.age}</p>
-                        <p className="text-sm text-muted-foreground">{patient._count.appointments} appointments</p>
-                        <p className="text-sm text-muted-foreground">
-                          Joined: {new Date(patient.createdAt).toLocaleDateString()}
-                        </p>
+            {filteredPatients.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No patients found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredPatients.map((patient) => (
+                  <div key={patient.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <User className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{patient.name}</h3>
+                        <p className="text-sm text-muted-foreground">IC/Passport: {patient.icOrPassport}</p>
+                        <p className="text-sm text-muted-foreground">{patient.email}</p>
+                        <div className="flex items-center gap-4 mt-1">
+                          <p className="text-sm text-muted-foreground">Age: {patient.age}</p>
+                          <p className="text-sm text-muted-foreground">{patient._count.appointments} appointments</p>
+                          <p className="text-sm text-muted-foreground">
+                            Joined: {new Date(patient.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {getGenderBadge(patient.gender)}
+                    <div className="flex items-center gap-2">
+                      {getGenderBadge(patient.gender)}
 
-                    {/* View Details Button */}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="ghost" onClick={() => setSelectedPatient(patient)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>{patient.name} - Patient Details</DialogTitle>
-                          <DialogDescription>Complete patient information and medical history</DialogDescription>
-                        </DialogHeader>
-                        {selectedPatient && <PatientDetails patient={selectedPatient} />}
-                      </DialogContent>
-                    </Dialog>
+                      {/* View Details Button */}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="ghost" onClick={() => setSelectedPatient(patient)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>{patient.name} - Patient Details</DialogTitle>
+                            <DialogDescription>Complete patient information and medical history</DialogDescription>
+                          </DialogHeader>
+                          {selectedPatient && <PatientDetails patient={selectedPatient} />}
+                        </DialogContent>
+                      </Dialog>
 
-                    {/* Delete Button */}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => deletePatient(patient.id)}
-                      disabled={actionLoading}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      {/* Delete Button */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => deletePatient(patient.id)}
+                        disabled={actionLoading}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </Wrapper>
+    </>
   )
 }
 

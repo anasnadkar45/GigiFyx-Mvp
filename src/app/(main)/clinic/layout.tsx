@@ -37,7 +37,7 @@ export default async function ClinicLayout({
   if (user.clinic.status !== "APPROVED") {
     return (
       <VerificationGate
-        clinic={user.clinic}
+        clinic={user.clinic as any}
         user={{
           id: user.id,
           name: user.name || "",

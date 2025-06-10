@@ -34,6 +34,8 @@ import {
   ExternalLink,
 } from "lucide-react"
 import { toast } from "sonner"
+import { Topbar, TopbarContent, TopbarDescription, TopbarTitle } from "@/components/global/Topbar"
+import { Wrapper } from "@/components/global/Wrapper"
 
 interface Clinic {
   id: string
@@ -181,155 +183,196 @@ export default function AdminClinicsPage() {
   // }
 
   return (
-    <div className="p-6 space-y-6">
+    <>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Clinic Management</h1>
-          <p className="text-muted-foreground">Review and manage clinic applications</p>
-        </div>
-      </div>
+      <Topbar>
+        <TopbarContent>
+          <TopbarTitle>Clinic Management</TopbarTitle>
+          <TopbarDescription>Review and manage clinic applications</TopbarDescription>
+        </TopbarContent>
+      </Topbar>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search clinics or owners..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+      <Wrapper className="space-y-6">
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search clinics or owners..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Status</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="APPROVED">Approved</SelectItem>
-                <SelectItem value="REJECTED">Rejected</SelectItem>
-                <SelectItem value="SUSPENDED">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Clinics</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{clinics.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <Clock className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-500">
-              {clinics.filter((c) => c.status === "PENDING").length}
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Status</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="APPROVED">Approved</SelectItem>
+                  <SelectItem value="REJECTED">Rejected</SelectItem>
+                  <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Clinics</CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{clinics.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending</CardTitle>
+              <Clock className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-500">
+                {clinics.filter((c) => c.status === "PENDING").length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Approved</CardTitle>
+              <Check className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-500">
+                {clinics.filter((c) => c.status === "APPROVED").length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+              <X className="h-4 w-4 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-500">
+                {clinics.filter((c) => c.status === "REJECTED").length}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Clinics List */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            <Check className="h-4 w-4 text-green-500" />
+          <CardHeader>
+            <CardTitle>Clinics ({filteredClinics.length})</CardTitle>
+            <CardDescription>Manage clinic applications and approvals</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
-              {clinics.filter((c) => c.status === "APPROVED").length}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
-            <X className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-500">
-              {clinics.filter((c) => c.status === "REJECTED").length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Clinics List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Clinics ({filteredClinics.length})</CardTitle>
-          <CardDescription>Manage clinic applications and approvals</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredClinics.length === 0 ? (
-            <div className="text-center py-8">
-              <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No clinics found</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredClinics.map((clinic) => (
-                <div key={clinic.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Building2 className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{clinic.name}</h3>
-                      <p className="text-sm text-muted-foreground">Owner: {clinic.owner.name}</p>
-                      <p className="text-sm text-muted-foreground">{clinic.address}</p>
-                      <div className="flex items-center gap-4 mt-1">
-                        <p className="text-sm text-muted-foreground">
-                          Applied: {new Date(clinic.createdAt).toLocaleDateString()}
-                        </p>
-                        <p className="text-sm text-muted-foreground">{clinic._count.appointments} appointments</p>
-                        <p className="text-sm text-muted-foreground">{clinic._count.services} services</p>
+            {filteredClinics.length === 0 ? (
+              <div className="text-center py-8">
+                <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No clinics found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredClinics.map((clinic) => (
+                  <div key={clinic.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Building2 className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{clinic.name}</h3>
+                        <p className="text-sm text-muted-foreground">Owner: {clinic.owner.name}</p>
+                        <p className="text-sm text-muted-foreground">{clinic.address}</p>
+                        <div className="flex items-center gap-4 mt-1">
+                          <p className="text-sm text-muted-foreground">
+                            Applied: {new Date(clinic.createdAt).toLocaleDateString()}
+                          </p>
+                          <p className="text-sm text-muted-foreground">{clinic._count.appointments} appointments</p>
+                          <p className="text-sm text-muted-foreground">{clinic._count.services} services</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(clinic.status)}
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(clinic.status)}
 
-                    {/* View Details Button */}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="ghost" onClick={() => setSelectedClinic(clinic)}>
-                          <Eye className="h-4 w-4" />
+                      {/* View Details Button */}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="ghost" onClick={() => setSelectedClinic(clinic)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>{clinic.name} - Review Details</DialogTitle>
+                            <DialogDescription>
+                              Review all clinic information and documents before making a decision
+                            </DialogDescription>
+                          </DialogHeader>
+                          {selectedClinic && <ClinicReviewDetails clinic={selectedClinic} />}
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Action Buttons */}
+                      {clinic.status === "PENDING" && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => updateClinicStatus(clinic.id, "APPROVED")}
+                            disabled={actionLoading}
+                            className="text-green-600 border-green-600 hover:bg-green-50"
+                            variant="outline"
+                          >
+                            <Check className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedClinic(clinic)
+                              setShowRejectDialog(true)
+                            }}
+                            disabled={actionLoading}
+                            className="text-red-600 border-red-600 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+
+                      {clinic.status === "APPROVED" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateClinicStatus(clinic.id, "SUSPENDED")}
+                          disabled={actionLoading}
+                          className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                        >
+                          <AlertTriangle className="h-4 w-4 mr-1" />
+                          Suspend
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>{clinic.name} - Review Details</DialogTitle>
-                          <DialogDescription>
-                            Review all clinic information and documents before making a decision
-                          </DialogDescription>
-                        </DialogHeader>
-                        {selectedClinic && <ClinicReviewDetails clinic={selectedClinic} />}
-                      </DialogContent>
-                    </Dialog>
+                      )}
 
-                    {/* Action Buttons */}
-                    {clinic.status === "PENDING" && (
-                      <div className="flex gap-2">
+                      {clinic.status === "SUSPENDED" && (
                         <Button
                           size="sm"
                           onClick={() => updateClinicStatus(clinic.id, "APPROVED")}
@@ -338,97 +381,58 @@ export default function AdminClinicsPage() {
                           variant="outline"
                         >
                           <Check className="h-4 w-4 mr-1" />
-                          Approve
+                          Reactivate
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedClinic(clinic)
-                            setShowRejectDialog(true)
-                          }}
-                          disabled={actionLoading}
-                          className="text-red-600 border-red-600 hover:bg-red-50"
-                        >
-                          <X className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </div>
-                    )}
-
-                    {clinic.status === "APPROVED" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateClinicStatus(clinic.id, "SUSPENDED")}
-                        disabled={actionLoading}
-                        className="text-orange-600 border-orange-600 hover:bg-orange-50"
-                      >
-                        <AlertTriangle className="h-4 w-4 mr-1" />
-                        Suspend
-                      </Button>
-                    )}
-
-                    {clinic.status === "SUSPENDED" && (
-                      <Button
-                        size="sm"
-                        onClick={() => updateClinicStatus(clinic.id, "APPROVED")}
-                        disabled={actionLoading}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
-                        variant="outline"
-                      >
-                        <Check className="h-4 w-4 mr-1" />
-                        Reactivate
-                      </Button>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Rejection Dialog */}
-      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reject Clinic Application</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting {selectedClinic?.name}'s application.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="reason">Rejection Reason</Label>
-              <Textarea
-                id="reason"
-                placeholder="Please explain why this application is being rejected..."
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                rows={4}
-              />
+        {/* Rejection Dialog */}
+        <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reject Clinic Application</DialogTitle>
+              <DialogDescription>
+                Please provide a reason for rejecting {selectedClinic?.name}'s application.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="reason">Rejection Reason</Label>
+                <Textarea
+                  id="reason"
+                  placeholder="Please explain why this application is being rejected..."
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  rows={4}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (selectedClinic) {
+                      updateClinicStatus(selectedClinic.id, "REJECTED", rejectionReason)
+                    }
+                  }}
+                  disabled={actionLoading || !rejectionReason.trim()}
+                >
+                  {actionLoading ? "Rejecting..." : "Reject Application"}
+                </Button>
+              </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (selectedClinic) {
-                    updateClinicStatus(selectedClinic.id, "REJECTED", rejectionReason)
-                  }
-                }}
-                disabled={actionLoading || !rejectionReason.trim()}
-              >
-                {actionLoading ? "Rejecting..." : "Reject Application"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          </DialogContent>
+        </Dialog>
+      </Wrapper>
+    </>
   )
 }
 

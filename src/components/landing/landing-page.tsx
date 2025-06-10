@@ -17,6 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import Image from "next/image"
+import Logo from '../../../public/GigiFyxLogo.png'
 
 type Clinic = {
   id: string
@@ -71,17 +73,35 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
   }
 
   const handleProceedToBooking = () => {
-    if (selectedClinic) {
+    if (!user?.id) {
+      toast.error("Please sign in to book an appointment", {
+        description: "You need to be registered to book appointments",
+        action: {
+          label: "Sign In",
+          onClick: () => router.push("/login"),
+        },
+      })
+    }else if (selectedClinic) {
       router.push(`/patient/clinics/${selectedClinic.id}/book`)
     }
     setIsBookingDialogOpen(false)
   }
 
   const handleSearch = () => {
-    const params = new URLSearchParams()
-    if (searchLocation) params.set("location", searchLocation)
-    if (searchService) params.set("service", searchService)
-    router.push(`/patient/clinics?${params.toString()}`)
+    if (!user?.id) {
+      toast.error("Please sign in to book an appointment", {
+        description: "You need to be registered to book appointments",
+        action: {
+          label: "Sign In",
+          onClick: () => router.push("/login"),
+        },
+      })
+    }else{
+      const params = new URLSearchParams()
+      if (searchLocation) params.set("location", searchLocation)
+      if (searchService) params.set("service", searchService)
+      router.push(`/patient/clinics?${params.toString()}`)
+    }
   }
 
   // Get minimum price for each clinic
@@ -99,27 +119,19 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-1">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center relative">
-                <span className="text-white font-bold text-lg">🦷</span>
-                <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-purple-400" />
-              </div>
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">😊</span>
-              </div>
-            </div>
+            <Image src={Logo} alt="GigiFyx Logo" height={50}/>
             <span className="text-2xl font-bold text-gray-800">GigiFyx</span>
           </div>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/find-dentist" className="text-gray-700 hover:text-purple-600 font-medium">
+            <Link href="#" className="text-gray-700 hover:text-purple-600 font-medium">
               Find a Dentist
             </Link>
-            <Link href="/how-it-works" className="text-gray-700 hover:text-purple-600 font-medium">
+            <Link href="#" className="text-gray-700 hover:text-purple-600 font-medium">
               How It Works
             </Link>
-            <Link href="/for-clinics" className="text-gray-700 hover:text-purple-600 font-medium">
+            <Link href="#" className="text-gray-700 hover:text-purple-600 font-medium">
               For Clinics
             </Link>
           </nav>
@@ -128,12 +140,9 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
           {!user?.id ? (
             <div className="flex items-center space-x-3">
               <Link href="/login">
-                <Button variant="ghost" className="text-gray-700 hover:text-purple-600">
+                <Button>
                   Sign In
                 </Button>
-              </Link>
-              <Link href="/signup">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full">Sign Up</Button>
               </Link>
             </div>
           ) : (
@@ -270,7 +279,7 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
           </div>
 
           {/* View All Button */}
-          {featuredClinics.length > 0 && (
+          {/* {featuredClinics.length > 0 && (
             <div className="text-center mt-12">
               <Link href="/patient/clinics">
                 <Button
@@ -282,7 +291,7 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
                 </Button>
               </Link>
             </div>
-          )}
+          )} */}
 
           {/* Empty State */}
           {featuredClinics.length === 0 && (
@@ -372,66 +381,48 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">G</span>
+      <footer className="bg-gray-900 text-white py-12 px-4 mt-16">
+          <div className="container mx-auto">
+            <div className="grid md:grid-cols-4 gap-8">
+              <div>
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold">G</span>
+                  </div>
+                  <span className="text-xl font-bold">GigiFyx</span>
                 </div>
-                <span className="text-xl font-bold">GigiFyx</span>
+                <p className="text-gray-400">Making dental care accessible and convenient for everyone.</p>
               </div>
-              <p className="text-gray-400">Making dental care accessible and convenient for everyone.</p>
+              <div>
+                <h3 className="font-semibold mb-4">For Patients</h3>
+                <ul className="space-y-2 text-gray-400">
+                  <li className="hover:text-white transition-colors">Find Clinics</li>
+                  <li><a href="#" className="hover:text-white transition-colors">My Appointments</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Profile</a></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-4">For Clinics</h3>
+                <ul className="space-y-2 text-gray-400">
+                  <li className="hover:text-white transition-colors">Join Platform</li>
+                  <li><a href="#" className="hover:text-white transition-colors">Dashboard</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Manage Services</a></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-4">Support</h3>
+                <ul className="space-y-2 text-gray-400">
+                  <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                </ul>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold mb-4">For Patients</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/patient/clinics">Find Clinics</Link>
-                </li>
-                <li>
-                  <Link href="/patient/appointments">My Appointments</Link>
-                </li>
-                <li>
-                  <Link href="/patient/profile">Profile</Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">For Clinics</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/clinic/register">Join Platform</Link>
-                </li>
-                <li>
-                  <Link href="/clinic/dashboard">Dashboard</Link>
-                </li>
-                <li>
-                  <Link href="/clinic/services">Manage Services</Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/help">Help Center</Link>
-                </li>
-                <li>
-                  <Link href="/contact">Contact Us</Link>
-                </li>
-                <li>
-                  <Link href="/privacy">Privacy Policy</Link>
-                </li>
-              </ul>
+            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+              <p>&copy; 2024 GigiFyx. All rights reserved.</p>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 GigiFyx. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+        </footer>
 
       {/* Booking Dialog */}
       <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>

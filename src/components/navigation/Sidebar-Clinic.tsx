@@ -12,6 +12,9 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import Logo from '../../../public/GigiFyxLogo.png'
+import Image from 'next/image'
+import Link from 'next/link'
 
 const sidebarLinks = [
   {
@@ -73,12 +76,10 @@ export function Sidebar() {
         {/* Header */}
         <div className="flex items-center justify-between h-[91px] px-4 border-b">
           {!isCollapsed && (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-sidebar-primary to-primary rounded-lg flex items-center justify-center">
-                <Stethoscope className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="font-bold text-xl text-sidebar-foreground">DentalCare</h1>
-            </div>
+            <Link href={'/'} className="flex items-center gap-3">
+             <Image src={Logo} alt="GigiFyx Logo" className="size-10"/>
+              <h1 className="font-bold text-xl text-sidebar-foreground">GigiFyx</h1>
+            </Link>
           )}
 
           {/* Mobile Close Button */}

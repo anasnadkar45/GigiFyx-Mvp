@@ -112,7 +112,7 @@ export default async function PatientAppointmentsPage() {
               <div className="text-center py-8">
                 <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">No upcoming appointments</p>
-                <Link href="/patient/clinics">
+                <Link href="/patient/search">
                   <Button className="mt-4">Book Your First Appointment</Button>
                 </Link>
               </div>
