@@ -24,7 +24,7 @@ interface ClinicData {
   email?: string
   description: string
   image?: string
-  documentUrl: string
+  documents: [string]
   status: string
   city?: string
   state?: string
@@ -291,12 +291,16 @@ export default function EditClinicPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-medium text-sm mb-2">Business Document</h4>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={clinic.documentUrl} target="_blank" rel="noopener noreferrer">
-                      <FileText className="h-4 w-4 mr-2" />
-                      View Current Document
-                    </a>
-                  </Button>
+                  <div className="flex flex-wrap gap-6">
+                    {clinic.documents.map((documentUrl) => (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={documentUrl} target="_blank" rel="noopener noreferrer">
+                          <FileText className="h-4 w-4 mr-2" />
+                          View Current Document
+                        </a>
+                      </Button>
+                    ))}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-2">To update documents, please contact support</p>
                 </div>
                 {clinic.image && (
