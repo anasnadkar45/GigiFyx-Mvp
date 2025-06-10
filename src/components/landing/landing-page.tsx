@@ -168,6 +168,13 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
                   </Button>
                 </Link>
               )}
+              {user.role === "UNASSIGNED" && (
+                <Link href="/onboarding">
+                  <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                    Onboarding
+                  </Button>
+                </Link>
+              )}
               <Button onClick={() => signOut()} variant="ghost" className="text-gray-600 hover:text-red-600">
                 Logout
               </Button>

@@ -50,15 +50,6 @@ export default async function LoginPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <GoogleLoginForm />
-
-                        <div className="text-center text-sm text-muted-foreground">
-                            <p>
-                                Don't have an account?{" "}
-                                <Link href="/signup" className="text-primary hover:underline font-medium">
-                                    Sign up here
-                                </Link>
-                            </p>
-                        </div>
                     </CardContent>
                 </Card>
 

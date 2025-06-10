@@ -109,7 +109,7 @@ const OnBoardingForm = () => {
 
                     <p className=" text-sm mt-4">
                         Already have an account?{" "}
-                        <button onClick={() => router.push("/auth/signin")} className="underline hover:no-underline">
+                        <button onClick={() => router.push("/login")} className="underline hover:no-underline">
                             Sign in here
                         </button>
                     </p>
