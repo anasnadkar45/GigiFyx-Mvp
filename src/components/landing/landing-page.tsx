@@ -705,11 +705,9 @@ export function LandingPage({ user, featuredClinics = [] }: { user: any; feature
         <div className="container mx-auto">
           <div className="grid md:grid-cols-5 gap-8">
             <div className="md:col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">G</span>
-                </div>
-                <span className="text-xl font-bold">GigiFyx</span>
+              <div className="flex items-center space-x-3">
+                <Image src={Logo || "/placeholder.svg"} alt="GigiFyx Logo" height={50} />
+                <span className="text-2xl font-bold text-gray-800">GigiFyx</span>
               </div>
               <p className="text-gray-400 mb-4">
                 Malaysia's leading AI-powered dental booking platform, making quality dental care accessible and
