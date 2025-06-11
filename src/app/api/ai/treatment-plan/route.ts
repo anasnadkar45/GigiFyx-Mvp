@@ -3,7 +3,8 @@ import { prisma } from "@/app/utils/db"
 import { type NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { generateObject } from "ai"
-import { openai } from "@ai-sdk/openai"
+import { google } from "@ai-sdk/google" // Changed from OpenAI to Google
+import { UrgencyLevel } from "@prisma/client"
 
 const treatmentPlanSchema = z.object({
   patientId: z.string(),
@@ -35,6 +36,20 @@ const aiTreatmentPlanSchema = z.object({
   warningSignsToWatch: z.array(z.string()),
 })
 
+// Helper function to map string urgency to Prisma enum
+function mapUrgencyToEnum(urgency: string): UrgencyLevel {
+  switch (urgency.toUpperCase()) {
+    case "LOW":
+      return UrgencyLevel.LOW
+    case "HIGH":
+      return UrgencyLevel.HIGH
+    case "EMERGENCY":
+      return UrgencyLevel.EMERGENCY
+    default:
+      return UrgencyLevel.MEDIUM
+  }
+}
+
 export async function POST(request: NextRequest) {
   const session = await auth()
 
@@ -55,6 +70,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    console.log("Request body:", body) // Debug log
+
     const { patientId, diagnosis, symptoms, medicalHistory, urgency } = treatmentPlanSchema.parse(body)
 
     // Get patient information
@@ -120,7 +137,7 @@ Available Services at Clinic:
 ${availableServices.map((service) => `- ${service.name}: ${service.description || "No description"}`).join("\n")}
 
 Create a comprehensive treatment plan that includes:
-1. Multiple treatment phases if needed
+1. Multiple treatment phases if needed (start with phase 1)
 2. Realistic cost estimates in MYR (Malaysian Ringgit)
 3. Timeline for treatment completion
 4. Follow-up schedule
@@ -129,12 +146,16 @@ Create a comprehensive treatment plan that includes:
 
 IMPORTANT: This is a treatment planning tool. All plans must be reviewed and approved by a licensed dentist before implementation.`
 
+    console.log("Generating treatment plan with Gemini...") // Debug log
+
     const { object: treatmentPlan } = await generateObject({
-      model: openai("gpt-4o"),
+      model: google("gemini-1.5-flash"), // Changed from OpenAI to Google Gemini
       system: systemPrompt,
       prompt: "Generate a comprehensive dental treatment plan based on the provided information.",
       schema: aiTreatmentPlanSchema,
     })
+
+    console.log("AI treatment plan generated:", treatmentPlan) // Debug log
 
     // Save the treatment plan
     const savedPlan = await prisma.treatmentPlan.create({
@@ -144,11 +165,13 @@ IMPORTANT: This is a treatment planning tool. All plans must be reviewed and app
         createdBy: user.id,
         diagnosis,
         symptoms: symptoms.join(", "),
-        urgency,
+        urgency: mapUrgencyToEnum(urgency),
         aiGeneratedPlan: JSON.stringify(treatmentPlan),
         status: "DRAFT",
       },
     })
+
+    console.log("Treatment plan saved to database:", savedPlan.id) // Debug log
 
     return NextResponse.json({
       treatmentPlan,
@@ -160,9 +183,16 @@ IMPORTANT: This is a treatment planning tool. All plans must be reviewed and app
     console.error("Error generating treatment plan:", error)
 
     if (error instanceof z.ZodError) {
+      console.error("Validation error:", error.errors)
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
     }
 
-    return NextResponse.json({ error: "Failed to generate treatment plan" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Failed to generate treatment plan",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }

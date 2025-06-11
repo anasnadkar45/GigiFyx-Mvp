@@ -8,13 +8,16 @@ import {
   Calendar1,
   Warehouse,
   StethoscopeIcon,
-  Edit
+  Edit,
+  Notebook,
+  ClipboardPlus
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import Logo from '../../../public/GigiFyxLogo.png'
 import Image from 'next/image'
 import Link from 'next/link'
+import { signOut } from 'next-auth/react'
 
 const sidebarLinks = [
   {
@@ -26,13 +29,14 @@ const sidebarLinks = [
       { id: 3, name: "Calendar", href: "/clinic/calendar", icon: Calendar1 },
       { id: 4, name: "Inventory", href: "/clinic/inventory", icon: Warehouse },
       { id: 5, name: "Doctors", href: "/clinic/doctors", icon: StethoscopeIcon },
-      { id: 6, name: "Dental Services", href: "/clinic/services", icon: Stethoscope },
+      { id: 6, name: "Dental Services", href: "/clinic/services", icon: ClipboardPlus },
+      { id: 7, name: "Treatment Plans", href: "/clinic/treatment-plans", icon: Notebook },
     ],
   },
   {
     category: "SETTINGS",
     links: [
-      { id: 7, name: "Edit", href: "/clinic/edit", icon: Edit },
+      { id: 8, name: "Edit", href: "/clinic/edit", icon: Edit },
     ],
   },
 ]
@@ -77,7 +81,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between h-[91px] px-4 border-b">
           {!isCollapsed && (
             <Link href={'/'} className="flex items-center gap-3">
-             <Image src={Logo} alt="GigiFyx Logo" className="size-10"/>
+              <Image src={Logo} alt="GigiFyx Logo" className="size-10" />
               <h1 className="font-bold text-xl text-sidebar-foreground">GigiFyx</h1>
             </Link>
           )}
@@ -142,6 +146,9 @@ export function Sidebar() {
               </div>
             ))}
           </div>
+          <Button onClick={() => signOut()} variant="secondary">
+            Logout
+          </Button>
         </div>
       </div>
 

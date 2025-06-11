@@ -76,5 +76,9 @@ export default async function HomePage() {
     }
   })
 
-  return <LandingPage user={session?.user} featuredClinics={clinicsWithRating} />
+  return (
+    <>
+      <LandingPage user={session?.user} featuredClinics={clinicsWithRating} />
+    </>
+  )
 }

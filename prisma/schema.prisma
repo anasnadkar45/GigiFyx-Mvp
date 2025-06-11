@@ -317,6 +317,7 @@ enum NotificationType {
   INVENTORY_ALERT
   AI_RECOMMENDATION
   SYMPTOM_ALERT
+  TREATMENT_PLAN
 }
 
 // Clinic reviews and ratings
@@ -555,24 +556,26 @@ model AppointmentRecommendation {
 }
 
 model TreatmentPlan {
-  id              String              @id @default(cuid())
-  patientId       String
-  clinicId        String
-  createdBy       String
-  diagnosis       String
-  symptoms        String
-  urgency         UrgencyLevel
-  aiGeneratedPlan String // JSON string of AI-generated treatment plan
-  status          TreatmentPlanStatus @default(DRAFT)
-  approvedBy      String?
-  approvedAt      DateTime?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id                String              @id @default(cuid())
+  patientId         String
+  clinicId          String
+  createdBy         String
+  approvedBy        String?
+  diagnosis         String
+  symptoms          String
+  urgency           UrgencyLevel
+  aiGeneratedPlan   String // JSON string
+  status            TreatmentPlanStatus @default(DRAFT)
+  sharedWithPatient Boolean             @default(false) // New field
+  sharedAt          DateTime? // New field
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  approvedAt        DateTime?
 
   // Relations
   patient  Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
   clinic   Clinic  @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  creator  User    @relation("TreatmentPlanCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  creator  User    @relation("TreatmentPlanCreator", fields: [createdBy], references: [id])
   approver User?   @relation("TreatmentPlanApprover", fields: [approvedBy], references: [id])
 
   @@index([patientId])

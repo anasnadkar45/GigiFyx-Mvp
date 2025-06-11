@@ -135,7 +135,7 @@ Remember: Always emphasize the importance of professional dental evaluation for 
       await prisma.notification.create({
         data: {
           userId: user.id,
-          type: "SYSTEM_NOTIFICATION",
+          type: "SYMPTOM_ALERT",
           title: "Urgent Dental Symptoms Detected",
           message: `Your symptom check indicates ${analysis.urgencyLevel} urgency. Please seek professional dental care promptly.`,
         },

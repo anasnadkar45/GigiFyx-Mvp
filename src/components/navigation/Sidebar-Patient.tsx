@@ -9,13 +9,17 @@ import {
   HospitalIcon,
   BotMessageSquare,
   User,
-  BellDotIcon
+  BellDotIcon,
+  CheckCheck,
+  Notebook,
+  TicketCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import Logo from '../../../public/GigiFyxLogo.png'
 import Image from 'next/image'
 import Link from 'next/link'
+import { signOut } from 'next-auth/react'
 
 const sidebarLinks = [
   {
@@ -23,20 +27,22 @@ const sidebarLinks = [
     links: [
       { id: 0, name: "Dashboard", href: "/patient/dashboard", icon: Home },
       { id: 1, name: "Appointments", href: "/patient/appointments", icon: Calendar },
+      { id: 7, name: "Treatment Plans", href: "/patient/treatment-plans", icon: Notebook },
       { id: 2, name: "AI Asistant", href: "/patient/ai-assistant", icon: BotMessageSquare },
+      { id: 3, name: "AI Symptom Checker", href: "/patient/symptom-checker", icon: TicketCheck },
     ],
   },
   {
     category: "MARKETPLACE",
     links: [
-      { id: 3, name: "Clinics", href: "/patient/search", icon: HospitalIcon },
+      { id: 4, name: "Clinics", href: "/patient/search", icon: HospitalIcon },
     ],
   },
   {
     category: "SETTINGS AND NOTIFICATIONS",
     links: [
-      { id: 4, name: "Profile", href: "/patient/profile", icon: User },
-      { id: 5, name: "Notifications", href: "/patient/notifications", icon: BellDotIcon },
+      { id: 5, name: "Profile", href: "/patient/profile", icon: User },
+      { id: 6, name: "Notifications", href: "/patient/notifications", icon: BellDotIcon },
     ],
   },
 ]
@@ -80,8 +86,8 @@ export function Sidebar() {
         {/* Header */}
         <div className="flex items-center justify-between h-[91px] px-4 border-b">
           {!isCollapsed && (
-           <Link href={'/'} className="flex items-center gap-3">
-             <Image src={Logo} alt="GigiFyx Logo" className="size-10"/>
+            <Link href={'/'} className="flex items-center gap-3">
+              <Image src={Logo} alt="GigiFyx Logo" className="size-10" />
               <h1 className="font-bold text-xl text-sidebar-foreground">GigiFyx</h1>
             </Link>
           )}
@@ -146,6 +152,9 @@ export function Sidebar() {
               </div>
             ))}
           </div>
+          <Button onClick={() => signOut()} variant="secondary">
+            Logout
+          </Button>
         </div>
       </div>
 
