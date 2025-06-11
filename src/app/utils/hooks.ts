@@ -14,18 +14,24 @@ export async function requireUser() {
 
 export async function getUserData() {
   const session = await auth();
+
+  if (!session?.user?.email) {
+    return { userId: null, user: null };
+  }
+
   const user = await prisma.user.findUnique({
     where: {
-      id: session?.user?.id
+      email: session.user.email,
     },
-    include:{
-      clinic:true,
-      Appointments:true,
-      Patient:true,
-    }
-  })
+    include: {
+      clinic: true,
+      Appointments: true,
+      Patient: true,
+    },
+  });
+
   return {
-    userId: session?.user?.id,
-    user
-  }
+    userId: user?.id ?? null,
+    user,
+  };
 }

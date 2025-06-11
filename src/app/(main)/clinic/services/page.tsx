@@ -1,9 +1,11 @@
 "use client"
 
-import type React from "react"
-
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { DollarSign, Pencil, Plus, Trash2 } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -12,42 +14,48 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { DollarSign, Plus } from "lucide-react"
-import { toast } from "sonner"
+
 import { Wrapper } from "@/components/global/Wrapper"
-import { Topbar, TopbarAction, TopbarContent, TopbarDescription, TopbarTitle } from "@/components/global/Topbar"
-import ServiceForm from "@/components/clinic/forms/ServiceForm"
+import {
+  Topbar,
+  TopbarAction,
+  TopbarContent,
+  TopbarDescription,
+  TopbarTitle,
+} from "@/components/global/Topbar"
+
 import type { Service } from "@/app/utils/types"
-import { Card, CardContent } from "@/components/ui/card"
+import ServiceForm from "@/components/clinic/forms/ServiceForm"
 
 export default function ClinicServicesPage() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  async function fetchServices() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null)
+
+  const [formData, setFormData] = useState<Service>({
+    name: "",
+    price: 0,
+    description: "",
+    category: "General",
+    isActive: "ACTIVE",
+    id: "",
+    clinicId: "",
+    createdAt: "",
+    updatedAt: "",
+  })
+
+  const fetchServices = async () => {
     try {
       setLoading(true)
       const res = await fetch("/api/clinics/service/my-services")
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`)
-      }
-
       const data = await res.json()
-
-      if (data.error) {
-        throw new Error(data.error)
-      }
-
-      // Fix: Extract services from the response object
-      if (data) {
-        setServices(data.services)
-      }
+      setServices(data.services || [])
     } catch (err) {
-      console.error("Error fetching services:", err)
-      setError(err instanceof Error ? err.message : "Failed to fetch services")
+      setError("Failed to fetch services")
     } finally {
       setLoading(false)
     }
@@ -57,76 +65,77 @@ export default function ClinicServicesPage() {
     fetchServices()
   }, [])
 
-  const [formData, setFormData] = useState({
-    name: "",
-    price: 0,
-    description: "",
-    category: "General",
-    isActive: "ACTIVE",
-  })
-
-  const handleAddService = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.name || formData.price <= 0) {
-      toast("Please provide a service name and valid price.")
-      return
-    }
-
-    try {
-      const response = await fetch("/api/clinics/service/new-service", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to add service")
-      }
-
-      toast.success("Service created successfully")
-      setIsAddDialogOpen(false)
-      // Reset form data
-      setFormData({
-        name: "",
-        price: 0,
-        description: "",
-        category: "General",
-        isActive: "ACTIVE",
-      })
-      // Refresh the services list
-      fetchServices()
-    } catch (error) {
-      console.error("Service error:", error)
-      toast.error(error instanceof Error ? error.message : "Service creation failed")
-    }
-  }
-
   const handleServiceChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  console.log("Services:", services)
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      price: 0,
+      description: "",
+      category: "General",
+      isActive: "ACTIVE",
+      id: "",
+      clinicId: "",
+      createdAt: "",
+      updatedAt: "",
+    })
+    setEditMode(false)
+    setEditingServiceId(null)
+  }
 
-  if (loading) {
-    return (
-      <>
-        <Topbar>
-          <TopbarContent>
-            <TopbarTitle>Services Management</TopbarTitle>
-            <TopbarDescription>Manage your clinic services, pricing, and availability</TopbarDescription>
-          </TopbarContent>
-        </Topbar>
-        <Wrapper>
-          <div className="flex items-center justify-center h-64">
-            <p>Loading services...</p>
-          </div>
-        </Wrapper>
-      </>
-    )
+  const handleSave = async () => {
+    try {
+      const method = editMode ? "PUT" : "POST"
+      const url = editMode
+        ? "/api/clinics/service/my-services"
+        : "/api/clinics/service/new-service"
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editMode ? formData : { ...formData, isActive: formData.isActive }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong")
+      }
+
+      toast.success(`Service ${editMode ? "updated" : "added"} successfully`)
+      setIsDialogOpen(false)
+      resetForm()
+      fetchServices()
+    } catch (err: any) {
+      toast.error(err.message || "Error saving service")
+    }
+  }
+
+  const handleEdit = (service: Service) => {
+    setFormData(service)
+    setEditingServiceId(service.id)
+    setEditMode(true)
+    setIsDialogOpen(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    const confirmed = confirm("Are you sure you want to delete this service?")
+    if (!confirmed) return
+
+    try {
+      const res = await fetch(`/api/clinics/service/my-services?id=${id}`, {
+        method: "DELETE",
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to delete")
+
+      toast.success("Service deleted")
+      fetchServices()
+    } catch (err: any) {
+      toast.error(err.message || "Error deleting service")
+    }
   }
 
   return (
@@ -138,7 +147,10 @@ export default function ClinicServicesPage() {
           <TopbarDescription>Manage your clinic services, pricing, and availability</TopbarDescription>
         </TopbarContent>
         <TopbarAction>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open)
+            if (!open) resetForm()
+          }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -147,14 +159,18 @@ export default function ClinicServicesPage() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Add New Service</DialogTitle>
-                <DialogDescription>Create a new service for your clinic</DialogDescription>
+                <DialogTitle>{editMode ? "Edit Service" : "Add New Service"}</DialogTitle>
+                <DialogDescription>{editMode ? "Update your service details" : "Create a new service"}</DialogDescription>
               </DialogHeader>
               <ServiceForm
                 service={formData}
                 onServiceChange={handleServiceChange}
-                onSave={handleAddService}
-                onCancel={() => setIsAddDialogOpen(false)}
+                onSave={handleSave}
+                onCancel={() => {
+                  setIsDialogOpen(false)
+                  resetForm()
+                }}
+                isEdit={editMode}
               />
             </DialogContent>
           </Dialog>
@@ -233,24 +249,27 @@ export default function ClinicServicesPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {services.map((service) => (
-                  <Card key={service.id} className="border">
+                  <Card key={service.id}>
                     <CardContent className="p-4">
                       <h4 className="font-semibold">{service.name}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">{service.category}</p>
-                      <p className="text-lg font-bold text-green-600">RM {service.price || 0}</p>
-                      <p className="text-sm mt-2">{service.description}</p>
-                      <div className="mt-3">
-                        <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs ${service.isActive === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                            }`}
-                        >
-                          {service.isActive}
-                        </span>
+                      <p className="text-sm text-muted-foreground mb-1">{service.category}</p>
+                      <p className="text-lg font-bold text-green-600">RM {service.price}</p>
+                      <p className="text-sm">{service.description}</p>
+                      <p className="mt-2 text-xs text-gray-500">{service.isActive}</p>
+
+                      <div className="flex gap-2 mt-4">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(service)}>
+                          <Pencil className="w-4 h-4 mr-1" /> Edit
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={() => handleDelete(service.id)}>
+                          <Trash2 className="w-4 h-4 mr-1" /> Delete
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
+
             )}
           </CardContent>
         </Card>

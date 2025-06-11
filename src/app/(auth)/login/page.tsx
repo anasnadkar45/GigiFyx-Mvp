@@ -18,7 +18,7 @@ export default async function LoginPage() {
                 redirect("/clinic/dashboard")
             } else if (user.user?.role === "ADMIN") {
                 redirect("/admin/dashboard")
-            }else if (user.user?.role === "UNASSIGNED"){
+            } else if (user.user?.role === "UNASSIGNED") {
                 redirect("/onbarding")
             }
         } catch (error) {
